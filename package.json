@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "tauri": "tauri"
   },
   "dependencies": {
     "@nextui-org/button": "2.0.26",
@@ -25,17 +26,19 @@
     "@radix-ui/react-slot": "^1.0.2",
     "@react-aria/ssr": "^3.8.0",
     "@react-aria/visually-hidden": "^3.8.6",
+    "@tauri-apps/api": "^1.5.3",
     "@types/node": "20.5.7",
     "@types/react": "18.2.21",
     "@types/react-dom": "18.2.7",
     "autoprefixer": "10.4.16",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
+    "embla-carousel-react": "^8.0.0-rc22",
     "eslint": "8.48.0",
     "eslint-config-next": "14.0.2",
     "framer-motion": "^10.16.4",
     "intl-messageformat": "^10.5.0",
-    "lucide-react": "^0.307.0",
+    "lucide-react": "^0.320.0",
     "next": "14.0.2",
     "next-themes": "^0.2.1",
     "postcss": "8.4.31",
@@ -48,6 +51,7 @@
     "typescript": "5.0.4"
   },
   "devDependencies": {
+    "@tauri-apps/cli": "^1.5.9",
     "daisyui": "^4.5.0"
   }
 }

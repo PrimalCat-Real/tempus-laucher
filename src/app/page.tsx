@@ -7,11 +7,13 @@ import { title, subtitle } from "@/components/primitives";
 import NextCard from "@/components/nextCards";
 import { ShadcnButton } from "@/components/ShadcnButton";
 import { CardWithForm } from "@/components/ShadCnCards";
+import { redirect } from "next/navigation";
 
 export default function Home() {
+  redirect('/servers');
   return (
     <section className="flex flex-col items-center justify-center gap-4 py-8 md:py-4">
-      <div className="inline-block max-w-lg text-center justify-center">
+      {/* <div className="inline-block max-w-lg text-center justify-center">
         <h1 className={title()}>Make&nbsp;</h1>
         <h1 className={title({ color: "violet" })}>beautiful&nbsp;</h1>
         <br />
@@ -118,7 +120,7 @@ export default function Home() {
             Get started by editing <Code color="primary">app/page.tsx</Code>
           </span>
         </Snippet>
-      </div>
+      </div> */}
     </section>
   );
 }
