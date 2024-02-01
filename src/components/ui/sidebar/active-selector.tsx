@@ -13,16 +13,16 @@ const [activeIndex, setActiveIndex] = useState(0);
 
 
 useEffect(() => {
-  setActiveIndex(items.findIndex((item) => item.path === removeLanguagePrefix(pathname)));
+  setActiveIndex(items.findIndex((item) => item.path === pathname));
 }, [pathname, items]);
 
 
   
-  const topStyle = activeIndex !== -1 ? { top: `${activeIndex * 43.5 + 18}px` } : {};
+  const topStyle = activeIndex !== -1 ? { top: `${activeIndex * 44 + 20}px` } : {};
   return (
       <div
           style={topStyle}
-          className={cn('absolute transition-all duration-300 bg-primary-foreground custom-hover-shadow h-9 w-0.5 rounded-full -z-10 left-0')}
+          className={cn('absolute transition-all duration-300 bg-primary-foreground custom-hover-shadow h-8 w-0.5 rounded-full -z-10 left-0')}
       >
       </div>
   );

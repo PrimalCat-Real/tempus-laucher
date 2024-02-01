@@ -129,5 +129,7 @@
 }
 
 @layer utilities {
-
+  .dir-rtl{
+    direction: rtl;
+  }
 }

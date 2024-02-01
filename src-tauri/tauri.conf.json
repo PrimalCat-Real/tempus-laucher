@@ -12,7 +12,81 @@
   },
   "tauri": {
     "allowlist": {
-      "all": false,
+      "all": true,
+      "clipboard": {
+        "all": false,
+        "readText": false,
+        "writeText": false
+      },
+      "dialog": {
+        "all": true
+      },
+      "globalShortcut": {
+        "all": false
+      },
+      "http": {
+        "all": true,
+        "request": true,
+        "scope": ["http://**/*","https://**/*"] 
+      },
+      "notification": {
+        "all": true
+      },
+      "os": {
+        "all": true
+      },
+      "path": {
+        "all": true
+      },
+      "process": {
+        "all": false,
+        "exit": false,
+        "relaunch": true,
+        "relaunchDangerousAllowSymlinkMacos": false
+      },
+      "protocol": {
+        "all": false,
+        "asset": false,
+        "assetScope": []
+      },
+      "shell": {
+        "all": false,
+        "execute": true,
+        "open": true,
+        "scope": [],
+        "sidecar": false
+      },
+      "window": {
+        "all": false,
+        "center": false,
+        "close": true,
+        "create": false,
+        "hide": false,
+        "maximize": true,
+        "minimize": true,
+        "print": false,
+        "requestUserAttention": false,
+        "setAlwaysOnTop": false,
+        "setCursorGrab": false,
+        "setCursorIcon": false,
+        "setCursorPosition": false,
+        "setCursorVisible": false,
+        "setDecorations": true,
+        "setFocus": true,
+        "setFullscreen": true,
+        "setIcon": false,
+        "setMaxSize": false,
+        "setMinSize": false,
+        "setPosition": false,
+        "setResizable": false,
+        "setSize": true,
+        "setSkipTaskbar": false,
+        "setTitle": false,
+        "show": false,
+        "startDragging": true,
+        "unmaximize": true,
+        "unminimize": true
+      },
       "fs": {
         "all": true,
         "readFile": true,
@@ -24,7 +98,7 @@
         "removeFile": true,
         "renameFile": true,
         "exists": true,
-        "scope": ["*/**"]
+        "scope": ["*/**", "$APP/*", "$APP"]
       }
     },
     "bundle": {
@@ -42,7 +116,7 @@
         "icons/icon.icns",
         "icons/icon.ico"
       ],
-      "identifier": "primalcat.tempus.launcher",
+      "identifier": "tempus-launcher",
       "longDescription": "",
       "macOS": {
         "entitlements": null,
@@ -64,7 +138,15 @@
       "csp": null
     },
     "updater": {
-      "active": false
+      "active": true,
+      "dialog": true,
+      "windows": {
+        "installMode": "passive"
+      },
+      "endpoints": [
+        "https://releases.myapp.com/{{target}}/{{arch}}/{{current_version}}"
+      ],
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEJDMjIyOThCQjcxMjg0MUIKUldRYmhCSzNpeWtpdklVU2s4cXUwUE9sNTNGRWJGb1JvMDBkRTZjUUF5ak1uR0c1U3hDWWZvQUQK"
     },
     "windows": [
       {

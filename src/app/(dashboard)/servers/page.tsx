@@ -37,10 +37,11 @@ const ServersPage = () => {
                               </div>
                               <div className='flex justify-between gap-4 z-20'>
                                   <CardSettings link="settings" name="settings" />
+                                  <CardAction>
+                                    </CardAction>
                                   <CardDescribe>
-                                    <CardAction>
-                                </CardAction>
                                   </CardDescribe>
+                                  
                                    
        
                                   
