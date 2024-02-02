@@ -24,6 +24,7 @@ const CardAction: React.FC<CardActionProps> = () => {
   const [selectedFolderPath, setSelectedFolderPath] = useState<string | string[]>();
   const [isDownloading, setIsDownloading] = useState(false);
   const [downloadProgress, setDownloadProgress] = useState(0);
+  const [downloadName, setDownloadName] = useState("")
 
   useEffect(() => {
     const getLauncherPath = async () => {
@@ -37,7 +38,18 @@ const CardAction: React.FC<CardActionProps> = () => {
   useEffect(() => {
     listen('downloadProgress', (event) => {
       setDownloadProgress(parseFloat(event.payload as string));
-      console.log("Testing", parseFloat(event.payload as string));
+      // console.log("Testing", parseFloat(event.payload as string));
+    });
+
+    listen('downloadDone', () => {
+      
+    });
+    
+    listen('downloadStart', (event) => {
+      setDownloadName(event.payload as string)
+      console.log("Download started. Name:", event.payload);
+      
+      // Optionally, you can update your UI with the download name here
     });
 
     // return () => {
@@ -75,6 +87,7 @@ const CardAction: React.FC<CardActionProps> = () => {
       await invoke('main_download_file', {
         url: 'https://github.com/kindawindytoday/Minty-Releases/releases/download/4.4.0.1/minty.zip',
         destination: `${selectedFolderPath}/tempus.zip`,
+        downloadName: "Vanila"
       });
 
       await invoke('create_directory', { dist: `${selectedFolderPath}/vanila` }).catch(err => console.error(err));
@@ -102,6 +115,7 @@ const CardAction: React.FC<CardActionProps> = () => {
         await invoke('main_download_file', {
           url: 'http://158.220.109.29/files/17.0.1+12.zip',
           destination: `${selectedFolderPath}/java/17.0.1+12.zip`,
+          downloadName: "java"
         });
         await invoke('unzip_file', {
           source: `${selectedFolderPath}/java/17.0.1+12.zip`,
@@ -139,7 +153,7 @@ const CardAction: React.FC<CardActionProps> = () => {
                   <ModalContent>
                       {(onClose) => (
                           <>
-                              <ModalHeader className="flex flex-col gap-1">Modal Title</ModalHeader>
+                              <ModalHeader className="flex flex-col gap-1 text-primary">Загрузка {downloadName}</ModalHeader>
                               <ModalBody className="">
                                 {isDownloading ? (
                                   <CircularProgress

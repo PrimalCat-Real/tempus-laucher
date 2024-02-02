@@ -18,9 +18,9 @@ fn ping(address: &str) -> String {
 
 
 #[tauri::command]
-async fn main_download_file(window: tauri::Window, url: String, destination: String) -> Result<(), CommandError> {
+async fn main_download_file(window: tauri::Window, url: String, destination: String, downloadName: String,) -> Result<(), CommandError> {
   let download_path = PathBuf::from(&destination);
-  network::download_file(window, &url, &download_path)
+  network::download_file(window, &url, &download_path, &downloadName)
     .await
     .map_err(|_| CommandError::OSOperation("Unable to successfully download file".to_owned()))?;
   Ok(())

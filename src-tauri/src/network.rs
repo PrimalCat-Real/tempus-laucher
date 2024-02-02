@@ -12,7 +12,7 @@ pub enum NetworkError {
   NetworkRequest(#[from] reqwest::Error),
 }
 
-pub async fn download_file(window: tauri::Window, url: &String, destination: &PathBuf) -> Result<(), NetworkError> {
+pub async fn download_file(window: tauri::Window, url: &String, destination: &PathBuf, download_name: &String,) -> Result<(), NetworkError> {
   let client = reqwest::Client::new();
   let req = client.get(url);
   let res = req.send().await?;
@@ -22,6 +22,8 @@ pub async fn download_file(window: tauri::Window, url: &String, destination: &Pa
   let mut stream = res.bytes_stream();
   let mut downloaded_size = 0usize;
 
+  window.emit("downloadStart", download_name).unwrap();
+  
   while let Some(chunk) = stream.next().await {
     let chunk = chunk?;
     file.write_all(&chunk).await?;
