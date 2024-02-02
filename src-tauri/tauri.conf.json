@@ -50,11 +50,10 @@
         "assetScope": []
       },
       "shell": {
-        "all": false,
+        "all": true,
         "execute": true,
         "open": true,
-        "scope": [],
-        "sidecar": false
+        "sidecar": true
       },
       "window": {
         "all": false,
@@ -88,17 +87,7 @@
         "unminimize": true
       },
       "fs": {
-        "all": true,
-        "readFile": true,
-        "writeFile": true,
-        "readDir": true,
-        "copyFile": true,
-        "createDir": true,
-        "removeDir": true,
-        "removeFile": true,
-        "renameFile": true,
-        "exists": true,
-        "scope": ["*/**", "$APP/*", "$APP"]
+        "all": true
       }
     },
     "bundle": {
@@ -135,6 +124,7 @@
       }
     },
     "security": {
+      
       "csp": null
     },
     "updater": {
