@@ -1,5 +1,6 @@
 use futures_util::StreamExt;
-use std::path::PathBuf;
+use reqwest::Client;
+use std::{cmp::min, path::PathBuf};
 use tokio::{fs::File, io::AsyncWriteExt};
 // use tauri::event::emit;
 
@@ -23,7 +24,7 @@ pub async fn download_file(window: tauri::Window, url: &String, destination: &Pa
   let mut downloaded_size = 0usize;
 
   window.emit("downloadStart", download_name).unwrap();
-  
+
   while let Some(chunk) = stream.next().await {
     let chunk = chunk?;
     file.write_all(&chunk).await?;
@@ -39,3 +40,38 @@ pub async fn download_file(window: tauri::Window, url: &String, destination: &Pa
   window.emit("downloadDone", &true).unwrap();
   Ok(())
 }
+
+// pub async fn download_file(window: tauri::Window, url: &str, destination: &PathBuf, downloadName: &String) -> Result<(), String> {
+//     // Reqwest setup
+//     let client = reqwest::Client::new();
+//     let res = client
+//         .get(url)
+//         .send()
+//         .await
+//         .or(Err(format!("Failed to GET from '{}'", &url)))?;
+//     let total_size = res
+//         .content_length()
+//         .ok_or(format!("Failed to get content length from '{}'", &url))?;
+    
+//     // Indicatif setup
+   
+
+//     // download chunks
+//     let mut file = File::create(destination).await.or(Err(format!("Failed to create file")))?;
+//     let mut downloaded: u64 = 0;
+//     let mut stream = res.bytes_stream();
+
+//     window.emit("downloadStart", downloadName).unwrap();
+//     while let Some(item) = stream.next().await {
+//         let chunk = item.or(Err(format!("Error while downloading file")))?;
+//         file.write_all(&chunk)
+//             .await.or(Err(format!("Error while writing to file")))?;
+//         let new = min(downloaded + (chunk.len() as u64), total_size);
+        
+//         downloaded = new;
+//         let progress_percentage = (downloaded * 100) / total_size;
+//         window.emit("downloadProgress", &progress_percentage).unwrap();
+//     }
+
+//     return Ok(());
+// }

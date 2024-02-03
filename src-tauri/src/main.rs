@@ -2,9 +2,13 @@
 use std::path::{Path, PathBuf};
 use std::fs;
 use std::fs::File;
+use std::io::{Cursor, Write};
+use std::fs::create_dir_all;
+use std::sync::Arc;
 
 use commands::CommandError;
 use tauri::api::process::Command;
+use zip::ZipArchive;
 
 
 mod commands;
@@ -18,7 +22,7 @@ fn ping(address: &str) -> String {
 
 
 #[tauri::command]
-async fn main_download_file(window: tauri::Window, url: String, destination: String, downloadName: String,) -> Result<(), CommandError> {
+async fn main_download_file(window: tauri::Window, url: String, destination: String, downloadName: String) -> Result<(), CommandError> {
   let download_path = PathBuf::from(&destination);
   network::download_file(window, &url, &download_path, &downloadName)
     .await
@@ -32,22 +36,74 @@ fn directory_exists(path: String) -> Result<bool, String> {
     Ok(path.is_dir())
 }
 
+// #[tauri::command]
+// async fn unzip_file(window: tauri::Window, source: String, destination: String, unzipName: &str) -> Result<String, String> {
+//     window.emit("unzipStart", &unzipName).unwrap();
+//     let source_path = std::path::Path::new(&source);
+//     let destination_path = std::path::Path::new(&destination);
 
+//     // Unzip the file
+//     let file = File::open(&source_path).map_err(|e| e.to_string())?;
+//     let mut archive = zip::ZipArchive::new(file).map_err(|e| e.to_string())?;
+//     archive.extract(&destination_path).map_err(|e| e.to_string())?;
+
+//     // Delete the zip file
+//     std::fs::remove_file(&source_path).map_err(|e| e.to_string())?;
+//     window.emit("unzipEnd", &unzipName).unwrap();
+//     Ok(format!("Files successfully extracted to: {}", destination))
+// }
+
+// #[tauri::command]
+// async fn unzip_handler(window: tauri::Window, source: String, destination: String, unzipName: &str) -> Result<(), String> {
+//     window.emit("unzipStart", &unzipName).unwrap();
+
+//     unzip_file(window, &source, &destination, &unzipName).await
+// }
 #[tauri::command]
-async fn unzip_file(source: String, destination: String) -> Result<String, String> {
-    let source_path = std::path::Path::new(&source);
-    let destination_path = std::path::Path::new(&destination);
+async fn unzip_handler(window: tauri::Window, source: &str, destination: &str, unzipName: &str) -> Result<(), String> {
+    window.emit("unzipStart", &unzipName).unwrap();
+    let reader = File::open(source).map_err(|e| e.to_string())?;
+    let mut archive = ZipArchive::new(reader).map_err(|e| e.to_string())?;
 
-    // Unzip the file
-    let file = File::open(&source_path).map_err(|e| e.to_string())?;
-    let mut archive = zip::ZipArchive::new(file).map_err(|e| e.to_string())?;
-    archive.extract(&destination_path).map_err(|e| e.to_string())?;
+    let total_files = archive.len();
+    let mut current_progress = 0;
 
-    // Delete the zip file
-    std::fs::remove_file(&source_path).map_err(|e| e.to_string())?;
-    
-    Ok(format!("Files successfully extracted to: {}", destination))
+    for i in 0..total_files {
+        let mut file = archive.by_index(i).map_err(|e| e.to_string())?;
+        let outpath = file.sanitized_name();
+        let outpath = format!("{}/{}", destination, outpath.to_str().ok_or("Invalid path")?);
+
+        if file.is_dir() {
+            if !std::path::Path::new(&outpath).exists() {
+                fs::create_dir_all(&outpath).map_err(|e| e.to_string())?;
+            }
+            continue; // Skip to the next iteration since it's a directory.
+        }
+
+        if let Some(parent_dir) = std::path::Path::new(&outpath).parent() {
+            fs::create_dir_all(parent_dir).map_err(|e| e.to_string())?;
+        }
+
+        if std::path::Path::new(&outpath).exists() {
+            fs::remove_file(&outpath).map_err(|e| e.to_string())?;
+        }
+        
+        let mut outfile = File::create(&outpath).map_err(|e| e.to_string())?;
+        std::io::copy(&mut file, &mut outfile).map_err(|e| e.to_string())?;
+
+        current_progress += 1;
+        let progress_percentage = (current_progress as f64 / total_files as f64) * 99.0 + 1.0;  // Adjust the calculation
+        window.emit("unzipProgress", &progress_percentage).unwrap();
+    }
+
+    // Remove the original zip file after extraction
+    fs::remove_file(source).map_err(|e| e.to_string())?;
+    window.emit("unzipProgress", 100).unwrap();
+    window.emit("unzipEnd", &unzipName).unwrap();
+
+    Ok(())
 }
+
   
 
 #[tauri::command]
@@ -57,7 +113,7 @@ fn create_directory(dist: String) -> Result<(), String> {
 
 
 #[tauri::command]
-fn start_command() -> Result<(), String> {
+async fn start_command() -> Result<(), String> {
     // let game_dir = PathBuf::from("A:\\Games\\MinecraftGD\\instances\\Vanilla");
 
 
@@ -105,7 +161,7 @@ fn start_command() -> Result<(), String> {
 
 fn main() {
   tauri::Builder::default()
-    .invoke_handler(tauri::generate_handler![ping, main_download_file, create_directory, unzip_file, directory_exists, start_command])
+    .invoke_handler(tauri::generate_handler![ping, main_download_file, create_directory, unzip_handler, directory_exists, start_command])
     .run(tauri::generate_context!())
     
     .expect("error while running tauri application");

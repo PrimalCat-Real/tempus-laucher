@@ -23,6 +23,7 @@ const CardAction: React.FC<CardActionProps> = () => {
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
   const [selectedFolderPath, setSelectedFolderPath] = useState<string | string[]>();
   const [isDownloading, setIsDownloading] = useState(false);
+  const [isUnzipping, setIsUnzipping] = useState(false);
   const [downloadProgress, setDownloadProgress] = useState(0);
   const [downloadName, setDownloadName] = useState("")
 
@@ -41,8 +42,18 @@ const CardAction: React.FC<CardActionProps> = () => {
       // console.log("Testing", parseFloat(event.payload as string));
     });
 
-    listen('downloadDone', () => {
-      
+    listen('unzipProgress', (event) => {
+      setDownloadProgress(parseFloat(event.payload as string));
+      console.log("Unzip progress:", event.payload);
+    });
+    
+    listen('unzipStart', (event) => {
+     setDownloadName(event.payload as string)
+     setIsUnzipping(true)
+    });
+
+    listen('unzipEnd', (event) => {
+     setIsUnzipping(false)
     });
     
     listen('downloadStart', (event) => {
@@ -78,22 +89,38 @@ const CardAction: React.FC<CardActionProps> = () => {
     setIsDownloading(true);
     await invoke('create_directory', { dist: selectedFolderPath }).catch(err => console.error(err));
     // setIsDownloading(false);
-    await downloadFile();
     await downloadJava()
+    await downloadFile();
+    
   };
 
   const downloadFile = async () => {
     try {
       await invoke('main_download_file', {
-        url: 'https://github.com/kindawindytoday/Minty-Releases/releases/download/4.4.0.1/minty.zip',
-        destination: `${selectedFolderPath}/tempus.zip`,
-        downloadName: "Vanila"
+        url: 'http://158.220.109.29/files/datastore.zip',
+        // url: 'https://cdn.discordapp.com/attachments/1093144305616568402/1202240203037872138/minty.zip?ex=65ccbc70&is=65ba4770&hm=7245efd08e764d44dfbc1311c9b87c332c305dfcbecc09449e94671364f79d91&',
+        destination: `${selectedFolderPath}/datastore.zip`,
+        downloadName: "Загрузка Minecraft"
       });
 
-      await invoke('create_directory', { dist: `${selectedFolderPath}/vanila` }).catch(err => console.error(err));
-      await invoke('unzip_file', {
-        source: `${selectedFolderPath}/tempus.zip`,
-        destination: `${selectedFolderPath}/vanila`,
+      await invoke('create_directory', { dist: `${selectedFolderPath}/instances` }).catch(err => console.error(err));
+      await invoke('unzip_handler', {
+        source: `${selectedFolderPath}/datastore.zip`,
+        destination: `${selectedFolderPath}`,
+        unzipName: "Разпаковка Minecraft",
+      }).catch(err => console.error(err));
+
+      // загрузка сборки
+      await invoke('main_download_file', {
+        url: 'http://158.220.109.29/files/TempusVanila.zip',
+        // url: 'https://cdn.discordapp.com/attachments/1093144305616568402/1202240203037872138/minty.zip?ex=65ccbc70&is=65ba4770&hm=7245efd08e764d44dfbc1311c9b87c332c305dfcbecc09449e94671364f79d91&',
+        destination: `${selectedFolderPath}/instances/TempusVanila.zip`,
+        downloadName: "Загрузка Vanilla"
+      });
+      await invoke('unzip_handler', {
+        source: `${selectedFolderPath}/instances/TempusVanila.zip`,
+        destination: `${selectedFolderPath}/instances`,
+        unzipName: "Разпаковка Vanilla",
       }).catch(err => console.error(err));
 
       console.log('File downloaded successfully');
@@ -115,11 +142,12 @@ const CardAction: React.FC<CardActionProps> = () => {
         await invoke('main_download_file', {
           url: 'http://158.220.109.29/files/17.0.1+12.zip',
           destination: `${selectedFolderPath}/java/17.0.1+12.zip`,
-          downloadName: "java"
+          downloadName: "Загрузка Java"
         });
-        await invoke('unzip_file', {
+        await invoke('unzip_handler', {
           source: `${selectedFolderPath}/java/17.0.1+12.zip`,
           destination: `${selectedFolderPath}/java/`,
+          unzipName: "Разпаковка Java",
         }).catch(err => console.error(err));
       }
     } catch (error) {
@@ -153,38 +181,52 @@ const CardAction: React.FC<CardActionProps> = () => {
                   <ModalContent>
                       {(onClose) => (
                           <>
-                              <ModalHeader className="flex flex-col gap-1 text-primary">Загрузка {downloadName}</ModalHeader>
+                              <ModalHeader className="flex flex-col gap-1 text-primary">{downloadName}</ModalHeader>
                               <ModalBody className="">
-                                {isDownloading ? (
-                                  <CircularProgress
-                                    aria-label="Loading..."
-                                    value={downloadProgress}
-                                    className="self-center"
-                                    classNames={{
-                                      svg: 'w-36 h-36 drop-shadow-md',
-                                      indicator: 'stroke-white',
-                                      track: 'stroke-foreground',
-                                      value: 'text-3xl font-semibold text-white',
-                                    }}
-                                    color="secondary"
-                                    showValueLabel={true}
-                                  />
-                                ) : (
-                                  <div className="w-full h-full flex justify-center flex-col gap-4">
-                                    <Button
-                                      startContent={<PackageOpen />}
-                                      endContent={<FolderSearch className="ml-auto" />}
-                                      onClick={handleOpenDialog}
+                                {
+                                  isUnzipping ? (
+                                    <CircularProgress
+                                      className="self-center"
+                                      classNames={{
+                                        svg: 'w-36 h-36 drop-shadow-md',
+                                        indicator: 'stroke-white',
+                                        track: 'stroke-foreground',
+                                        value: 'text-3xl font-semibold text-white',
+                                      }}
                                       color="secondary"
-                                      className="bg-foreground flex justify-start"
-                                    >
-                                      <span className="overflow-hidden dir-rtl">{selectedFolderPath}</span>
-                                    </Button>
-                                    <Button onClick={createFolder} color="primary">
-                                      Download
-                                    </Button>
-                                  </div>
-                                )}
+                                      label="Unzipping..."
+                                    />
+                                  ) :
+                                  isDownloading ? (
+                                    <CircularProgress
+                                      aria-label="Loading..."
+                                      value={downloadProgress}
+                                      className="self-center"
+                                      classNames={{
+                                        svg: 'w-36 h-36 drop-shadow-md',
+                                        indicator: 'stroke-white',
+                                        track: 'stroke-foreground',
+                                        value: 'text-3xl font-semibold text-white',
+                                      }}
+                                      color="secondary"
+                                      showValueLabel={true}
+                                    />
+                                  ) : (
+                                    <div className="w-full h-full flex justify-center flex-col gap-4">
+                                      <Button
+                                        startContent={<PackageOpen />}
+                                        endContent={<FolderSearch className="ml-auto" />}
+                                        onClick={handleOpenDialog}
+                                        color="secondary"
+                                        className="bg-foreground flex justify-start"
+                                      >
+                                        <span className="overflow-hidden dir-rtl">{selectedFolderPath}</span>
+                                      </Button>
+                                      <Button onClick={createFolder} color="primary">
+                                        Download
+                                      </Button>
+                                    </div>
+                                  )};
                               </ModalBody>
                               <ModalFooter>
                                   <Button color="danger" variant="light" onPress={runGame}>
