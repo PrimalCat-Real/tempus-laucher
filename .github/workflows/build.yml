@@ -1,0 +1,51 @@
+name: Build and Deploy
+
+on:
+  push:
+    tags:
+        - "v*"
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [windows-latest]
+    runs-on: ${{ matrix.platform }}
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: latest
+    
+    - name: Install Rust toolchain
+      run: |
+        rustup update --no-self-update
+
+    - name: Install dependencies
+      run: |
+        npm install && npm run tauri build
+
+    - name: Build Changelog
+      id: build_changelog
+      run: echo "changelog=- ADD CHANGELOG" >> $GITHUB_ENV
+
+    - name: Build Tauri
+      uses: tauri-apps/tauri-action@v0
+      env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
+          TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
+      with:
+          tagName: ${{ github.ref_name }}
+          releaseName: "Sample Release for Modern Desktop App v__VERSION__"
+          releaseBody: |
+            ${{ steps.build_changelog.outputs.changelog }}
+            See the assets to download this version and install.
+          releaseDraft: true
+          prerelease: false
