@@ -20,13 +20,15 @@ interface CardActionProps {
   // Define any props if needed
 }
 
-type Status = 'download' | 'downloading' | 'update' | 'updating' | 'play' | 'playing';
-type indicatorStatus = 'unziping' | 'downloading' | 'error' | false
+type Status = 'download' | 'update' | 'play';
+type indicatorStatus = 'unziping' | 'playing' | 'downloading' | 'error' | false
+
 const gameDat = {
   name: "Vanilla",
 }
 
 const CardAction: React.FC<CardActionProps> = () => {
+  
   const [userName, setUserName] = useState('');
 
   const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
@@ -120,9 +122,13 @@ const CardAction: React.FC<CardActionProps> = () => {
     listen('unzipStart', (event) => {
       setDownloadStatus("unziping")
       setDownloadName(event.payload as string);
-      
-      // setDownloadProgress(parseFloat(event.payload as string));
-      // console.log("Testing", parseFloat(event.payload as string));
+    });
+
+    listen('startGame', (event) => {
+      setDownloadStatus("playing")
+    });
+    listen('endGame', (event) => {
+      setDownloadStatus(false)
     });
 
     // listen('unzipProgress', (event) => {
@@ -208,7 +214,7 @@ const CardAction: React.FC<CardActionProps> = () => {
 
   return (
     <div>
-      { status === "playing" && <div className="absolute w-full bg-background/5 rounded-md backdrop-blur-sm h-full top-0 left-0 z-40 flex justify-center items-center">
+      { downloadStatus === "playing" && <div className="absolute w-full bg-background/5 rounded-md backdrop-blur-sm h-full top-0 left-0 z-40 flex justify-center items-center">
         <CircularProgress
           aria-label="Loading..."
           className="self-center"

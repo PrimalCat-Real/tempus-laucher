@@ -17,12 +17,12 @@ const ServersPage = () => {
             gameVersion: "1.20.4",
             buildVersion: "0.0.1"
         },
-        {
-            name: "Test",
-            java: "",
-            gameVersion: "1.20.4",
-            buildVersion: "0.0.1"
-        }
+        // {
+        //     name: "Test",
+        //     java: "",
+        //     gameVersion: "1.20.4",
+        //     buildVersion: "0.0.1"
+        // }
     ]
 
 
