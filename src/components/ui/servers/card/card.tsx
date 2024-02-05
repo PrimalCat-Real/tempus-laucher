@@ -12,61 +12,126 @@ import { ResponseType, getClient } from '@tauri-apps/api/http';
 import { invoke } from '@tauri-apps/api/tauri';
 import { Command } from '@tauri-apps/api/shell'
 import { listen, Event  } from '@tauri-apps/api/event';
+import Play from '@/components/icons/play';
+import { checkFileExisting, downloadAndUnzip } from '@/lib/utils';
 
 
 interface CardActionProps {
   // Define any props if needed
 }
 
+type Status = 'download' | 'downloading' | 'update' | 'updating' | 'play' | 'playing';
+type indicatorStatus = 'unziping' | 'downloading' | 'error' | false
+const gameDat = {
+  name: "Vanilla",
+}
 
 const CardAction: React.FC<CardActionProps> = () => {
-  const { isOpen, onOpen, onOpenChange } = useDisclosure();
-  const [selectedFolderPath, setSelectedFolderPath] = useState<string | string[]>();
-  const [isDownloading, setIsDownloading] = useState(false);
-  const [isUnzipping, setIsUnzipping] = useState(false);
+  const [userName, setUserName] = useState('');
+
+  const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
+  const [status, setStatus] = useState<Status>('download');
+
+  const [downloadStatus, setDownloadStatus] = useState<indicatorStatus>(false)
+
+
+  
   const [downloadProgress, setDownloadProgress] = useState(0);
-  const [downloadName, setDownloadName] = useState("")
+  const [downloadName, setDownloadName] = useState("");
+
+
+
+  const [selectedFolderPath, setSelectedFolderPath] = useState<string | string[]>();
+
+  const gameApiUrl =  process.env.GAME_API_BASE_URL
+  const JAVA_URL_17 = `http://${gameApiUrl}/files/java/17.0.1+12.zip`;
+
+  const VANILLA_URL = `http://${gameApiUrl}/files/Vanilla.zip`;
+  const DATASTORE_URL = `http://${gameApiUrl}/files/datastore.zip`;
+
+  const VANILLA_PATH = `${selectedFolderPath}/instances/Vanilla`
+
+  // minecraft paths
+  const DATASTORE_PATH = `${selectedFolderPath}/datastore`
+
+  const JAVA_17 = `${selectedFolderPath}/java/17.0.1+12`
+
 
   useEffect(() => {
     const getLauncherPath = async () => {
+    const storedPath = localStorage.getItem('gameFolderPath');
+    if (storedPath) {
+      setSelectedFolderPath(storedPath)
+    } else {
+      // Assuming appLocalDataDir() returns a Promise, await it
       const { appLocalDataDir } = await import('@tauri-apps/api/path');
       const tauriAppDataDirectory = await appLocalDataDir();
-      setSelectedFolderPath(tauriAppDataDirectory);
+      setSelectedFolderPath(tauriAppDataDirectory)
+    }
+      
+    const storedUserName = localStorage.getItem('userName');
+    if (storedUserName) {
+      setUserName(storedUserName);
+    }
+        
+    
+
+    // console.log(isJava, selectedFolderPath+'/java');
+    // console.log(isDatastore, selectedFolderPath+'/datastore');
+    // console.log(isGameExist, selectedFolderPath+'/instances/Vanilla');
+    
+
+    
+    
+  
     };
     getLauncherPath();
   }, []);
 
   useEffect(() => {
+    const checkFolderExist = async () => {
+      const isGameExist = await checkFileExisting(selectedFolderPath+'\\instances\\Vanilla')
+      const isDatastore = await checkFileExisting(selectedFolderPath+'\\datastore')
+      const isJava = await checkFileExisting(selectedFolderPath+'\\java')
+
+      if(isGameExist && isDatastore && isJava){
+        setStatus("play")
+      }else if(false){
+        console.log("update this");
+      }else{
+        setStatus("download")
+      }
+    }
+    checkFolderExist();
+  })
+  
+  useEffect(() => {
+    
+    listen('downloadStart', (event) => {
+      setDownloadStatus("downloading")
+      setDownloadName(event.payload as string)
+      // console.log("Testing", parseFloat(event.payload as string));
+    });
     listen('downloadProgress', (event) => {
       setDownloadProgress(parseFloat(event.payload as string));
       // console.log("Testing", parseFloat(event.payload as string));
     });
 
-    listen('unzipProgress', (event) => {
-      setDownloadProgress(parseFloat(event.payload as string));
-      console.log("Unzip progress:", event.payload);
-    });
-    
     listen('unzipStart', (event) => {
-     setDownloadName(event.payload as string)
-     setIsUnzipping(true)
-    });
-
-    listen('unzipEnd', (event) => {
-     setIsUnzipping(false)
-    });
-    
-    listen('downloadStart', (event) => {
-      setDownloadName(event.payload as string)
-      console.log("Download started. Name:", event.payload);
+      setDownloadStatus("unziping")
+      setDownloadName(event.payload as string);
       
-      // Optionally, you can update your UI with the download name here
+      // setDownloadProgress(parseFloat(event.payload as string));
+      // console.log("Testing", parseFloat(event.payload as string));
     });
 
-    // return () => {
-		// 	downloadListener.then((unlisten) => unlisten());
-		// };
+    // listen('unzipProgress', (event) => {
+    //   setDownloadProgress(parseFloat(event.payload as string));
+    //   console.log("Unzip progress:", event.payload);
+    // });
+    
   }, []);
+
 
 
   const handleOpenDialog = async () => {
@@ -78,87 +143,60 @@ const CardAction: React.FC<CardActionProps> = () => {
       });
 
       if (selectedPath) {
-        setSelectedFolderPath(String(selectedPath) + '/tempus');
+        console.log("Set folder path");
+        
+        setSelectedFolderPath(String(selectedPath) + '\\tempus');
+        localStorage.setItem('gameFolderPath', String(selectedPath) + '\\tempus');
       }
     } catch (error) {
       console.error('Error opening dialog:', error);
     }
   };
 
-  const createFolder = async () => {
-    setIsDownloading(true);
+  const handleProcces = async () => {
+
     await invoke('create_directory', { dist: selectedFolderPath }).catch(err => console.error(err));
-    // setIsDownloading(false);
-    await downloadJava()
-    await downloadFile();
+    await invoke('create_directory', { dist: selectedFolderPath+'/java' }).catch(err => console.error(err));
+    await invoke('create_directory', { dist: selectedFolderPath+'/instances' }).catch(err => console.error(err));
+    // загрузка джава и распаковка
+    await downloadAndUnzip(selectedFolderPath+'/java', JAVA_URL_17, '17.0.1+12.zip', 'Java')
+    await downloadAndUnzip(selectedFolderPath + '', DATASTORE_URL, 'datastore', 'Minecraft')
+    await downloadAndUnzip(selectedFolderPath+'/instances', VANILLA_URL, 'Vanilla.zip', 'Vanilla')
+    // close dialog
+    onClose()
+    setStatus("play")
+    // setIsDownloading(true);
+    // java
     
+    // await handleOpenDialog()
+    
+    //
+    // 
+    
+    // setIsDownloading(false);
+    // await downloadJava()
+    // await downloadFile();
+    // onClose()
   };
 
-  const downloadFile = async () => {
-    try {
-      await invoke('main_download_file', {
-        url: 'http://158.220.109.29/files/datastore.zip',
-        // url: 'https://cdn.discordapp.com/attachments/1093144305616568402/1202240203037872138/minty.zip?ex=65ccbc70&is=65ba4770&hm=7245efd08e764d44dfbc1311c9b87c332c305dfcbecc09449e94671364f79d91&',
-        destination: `${selectedFolderPath}/datastore.zip`,
-        downloadName: "Загрузка Minecraft"
-      });
 
-      await invoke('create_directory', { dist: `${selectedFolderPath}/instances` }).catch(err => console.error(err));
-      await invoke('unzip_handler', {
-        source: `${selectedFolderPath}/datastore.zip`,
-        destination: `${selectedFolderPath}`,
-        unzipName: "Разпаковка Minecraft",
-      }).catch(err => console.error(err));
 
-      // загрузка сборки
-      await invoke('main_download_file', {
-        url: 'http://158.220.109.29/files/TempusVanila.zip',
-        // url: 'https://cdn.discordapp.com/attachments/1093144305616568402/1202240203037872138/minty.zip?ex=65ccbc70&is=65ba4770&hm=7245efd08e764d44dfbc1311c9b87c332c305dfcbecc09449e94671364f79d91&',
-        destination: `${selectedFolderPath}/instances/TempusVanila.zip`,
-        downloadName: "Загрузка Vanilla"
-      });
-      await invoke('unzip_handler', {
-        source: `${selectedFolderPath}/instances/TempusVanila.zip`,
-        destination: `${selectedFolderPath}/instances`,
-        unzipName: "Разпаковка Vanilla",
-      }).catch(err => console.error(err));
-
-      console.log('File downloaded successfully');
-    } catch (error) {
-      console.error('Error downloading file:', error);
+  const handleAction = async () => {
+    if(status === "download"){
+      console.log(selectedFolderPath);
+      // open download dialog
+      onOpen()
+    }else if(status === "play"){
+      await handlePlay()
     }
-  };
+    
+  }
 
 
-  const downloadJava = async () => {
-    try {
-      const tempusFolderPath = `${selectedFolderPath}/tempus`;
-      const javaFolderPath = `${tempusFolderPath}/java`;
-
-      const javaFolderExists = await invoke('directory_exists', { path: javaFolderPath }).catch(err => false);
-      if (!javaFolderExists) {
-        const isJavaExist = await invoke('create_directory', { dist: `${selectedFolderPath}/java` }).catch(err => console.error(err));
-        console.log(isJavaExist);
-        await invoke('main_download_file', {
-          url: 'http://158.220.109.29/files/17.0.1+12.zip',
-          destination: `${selectedFolderPath}/java/17.0.1+12.zip`,
-          downloadName: "Загрузка Java"
-        });
-        await invoke('unzip_handler', {
-          source: `${selectedFolderPath}/java/17.0.1+12.zip`,
-          destination: `${selectedFolderPath}/java/`,
-          unzipName: "Разпаковка Java",
-        }).catch(err => console.error(err));
-      }
-    } catch (error) {
-      console.error('Error downloading Java:', error);
-    }
-  };
-
-  const runGame = async () => {
+  const handlePlay = async () => {
     try{
       // new Command('echo', ['Test'])
-      await invoke('start_command').catch(err => console.error(err));
+      await invoke('start_command', {globalPath: "D:\\Games\\tempus", gameName: "Vanilla", userName: userName}).catch(err => console.error(err));
       
     }catch (error) {
       console.error('Error start game', error);
@@ -169,14 +207,35 @@ const CardAction: React.FC<CardActionProps> = () => {
   
 
   return (
+    <div>
+      { status === "playing" && <div className="absolute w-full bg-background/5 rounded-md backdrop-blur-sm h-full top-0 left-0 z-40 flex justify-center items-center">
+        <CircularProgress
+          aria-label="Loading..."
+          className="self-center"
+          classNames={{
+            svg: 'w-24 h-24 drop-shadow-md',
+            indicator: 'stroke-white',
+            track: 'stroke-foreground',
+            value: 'text-xl font-semibold text-white',
+          }}
+          color="secondary"
+          showValueLabel={true}
+        />
+      </div>}
       <Tooltip
           placement="top"
-          content="Скачать"
+          content={status === "play" ? "Играть" : "Скачать"}
           color="secondary"
           className='text-primary bg-default-100'
         >
-          <button onClick={onOpen} className='bg-default-100 h-14 w-14 rounded-md flex justify-center items-center cursor-pointer z-20'>
-              <Download></Download>
+          <button onClick={handleAction} className='bg-default-100 h-14 w-14 rounded-md flex justify-center items-center cursor-pointer z-20'>
+            
+              {status === "play" ? (
+                <Play></Play>
+              ) : (
+                <Download></Download>
+              )}
+              
               <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
                   <ModalContent>
                       {(onClose) => (
@@ -184,7 +243,7 @@ const CardAction: React.FC<CardActionProps> = () => {
                               <ModalHeader className="flex flex-col gap-1 text-primary">{downloadName}</ModalHeader>
                               <ModalBody className="">
                                 {
-                                  isUnzipping ? (
+                                  downloadStatus === "unziping" ? (
                                     <CircularProgress
                                       className="self-center"
                                       classNames={{
@@ -194,10 +253,9 @@ const CardAction: React.FC<CardActionProps> = () => {
                                         value: 'text-3xl font-semibold text-white',
                                       }}
                                       color="secondary"
-                                      label="Unzipping..."
                                     />
                                   ) :
-                                  isDownloading ? (
+                                  downloadStatus === "downloading"  ? (
                                     <CircularProgress
                                       aria-label="Loading..."
                                       value={downloadProgress}
@@ -206,6 +264,20 @@ const CardAction: React.FC<CardActionProps> = () => {
                                         svg: 'w-36 h-36 drop-shadow-md',
                                         indicator: 'stroke-white',
                                         track: 'stroke-foreground',
+                                        value: 'text-3xl font-semibold text-white',
+                                      }}
+                                      color="secondary"
+                                      showValueLabel={true}
+                                    />
+                                  ) : downloadStatus === "error"  ? (
+                                    <CircularProgress
+                                      aria-label="Error"
+                                      value={downloadProgress}
+                                      className="self-center"
+                                      classNames={{
+                                        svg: 'w-36 h-36 drop-shadow-md',
+                                        indicator: 'stroke-red-300',
+                                        track: 'stroke-red-500',
                                         value: 'text-3xl font-semibold text-white',
                                       }}
                                       color="secondary"
@@ -222,27 +294,19 @@ const CardAction: React.FC<CardActionProps> = () => {
                                       >
                                         <span className="overflow-hidden dir-rtl">{selectedFolderPath}</span>
                                       </Button>
-                                      <Button onClick={createFolder} color="primary">
+                                      <Button onClick={handleProcces} color="primary">
                                         Download
                                       </Button>
                                     </div>
                                   )};
                               </ModalBody>
-                              <ModalFooter>
-                                  <Button color="danger" variant="light" onPress={runGame}>
-                                      Close
-                                  </Button>
-                                  <Button color="primary" onPress={onClose}>
-                                      Action
-                                  </Button>
-                              </ModalFooter>
                           </>
                     )}
                   </ModalContent>
               </Modal>
           </button>
-  
       </Tooltip>
+    </div>
     )
       
 }

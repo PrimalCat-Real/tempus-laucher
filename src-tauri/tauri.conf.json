@@ -142,7 +142,7 @@
       {
         "fullscreen": false,
         "height": 600,
-        "resizable": true,
+        "resizable": false,
         "title": "Tempus",
         "width": 900
       }

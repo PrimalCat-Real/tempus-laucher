@@ -14,3 +14,10 @@ export type User = {
   totalPoints?: number
 }
 
+
+export type ServerData = {
+  name: string,
+  java: string,
+  gameVersion: string,
+  buildVersion: string
+}
