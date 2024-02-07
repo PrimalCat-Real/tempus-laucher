@@ -53,7 +53,6 @@ const ServersPage = () => {
                                   <p className='uppercase font-bold text-[12px] leading-3 version-text-overlay'>версия {server.gameVersion}</p>
                               </div>
                               <div className='flex justify-between gap-4 z-20'>
-                                Test1
                                   <CardSettings link="settings" name="settings" />
                                   <CardAction>
                                     </CardAction>
