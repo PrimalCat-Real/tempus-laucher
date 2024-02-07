@@ -20,6 +20,25 @@ fn ping(address: &str) -> String {
 }
 
 
+#[tauri::command]
+fn read_files_from_folder(folder_path: String) -> Result<Vec<String>, String> {
+    // Read the contents of the folder
+    match fs::read_dir(&folder_path) {
+        Ok(entries) => {
+            // Collect file names
+            let file_names: Vec<String> = entries
+                .filter_map(|entry| {
+                    entry.ok().and_then(|e| {
+                        e.file_name().into_string().ok()
+                    })
+                })
+                .collect();
+            Ok(file_names)
+        }
+        Err(err) => Err(format!("Error reading folder: {}", err)),
+    }
+}
+
 
 // #[tauri::command]
 // async fn main_download_file(window: tauri::Window, url: String, destination: String, downloadName: String) -> Result<(), CommandError> {
@@ -158,7 +177,7 @@ async fn start_command(window: tauri::Window, globalPath: String, gameName: Stri
 
 fn main() {
   tauri::Builder::default()
-    .invoke_handler(tauri::generate_handler![ping, main_download_file, create_directory, unzip_handler, directory_exists, start_command])
+    .invoke_handler(tauri::generate_handler![ping, main_download_file, create_directory, unzip_handler, directory_exists, start_command, read_files_from_folder])
     .run(tauri::generate_context!())
     
     .expect("error while running tauri application");

@@ -26,10 +26,10 @@ export default function Home() {
         const { shouldUpdate, manifest } = await checkUpdate();
         console.log("shouldUpdate:", shouldUpdate);
         console.log("manifest:", manifest);
-        if(shouldUpdate){
-          alert("update is here")
-        }
-        alert(shouldUpdate)
+        // if(shouldUpdate){
+        //   alert("update is here")
+        // }
+        // alert(shouldUpdate)
       } catch (error) {
         console.error("Error fetching updates:", error);
       }

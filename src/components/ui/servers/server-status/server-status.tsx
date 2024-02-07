@@ -64,9 +64,7 @@ useEffect(() => {
               <span className={cn("transition-colors animate-ping absolute inline-flex h-full w-full rounded-full  opacity-75", status && status.online  ? 'bg-green-400' : 'bg-red-500')}></span>
               <span className={cn("relative inline-flex rounded-full h-2 w-2 bg-green-500", status && status.online  ? 'bg-green-400' : 'bg-red-500')}></span>
           </span>
-          {status && status.players && (
-            <>{status.players.online} / {status.players.max}</>
-          )}
+          {status.players.online} / {status.players.max}
       </div>
   )
 }

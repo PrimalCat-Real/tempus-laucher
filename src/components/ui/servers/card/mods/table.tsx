@@ -17,110 +17,112 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Switch } from "@nextui-org/switch"
+import { useEffect, useState } from "react"
+import { invoke } from "@tauri-apps/api/tauri"
+import { ScrollArea } from "@/components/ui/scroll-area"
 
  
-const data: Payment[] = [
-  {
-    id: "m5gr84i9",
-    amount: 316,
-    status: "success",
-    email: "ken99@yahoo.com",
-  },
-  {
-    id: "3u1reuv4",
-    amount: 242,
-    status: "success",
-    email: "Abe45@gmail.com",
-  },
-  {
-    id: "derv1ws0",
-    amount: 837,
-    status: "processing",
-    email: "Monserrat44@gmail.com",
-  },
-  {
-    id: "5kma53ae",
-    amount: 874,
-    status: "success",
-    email: "Silas22@gmail.com",
-  },
-  {
-    id: "bhqecj4p",
-    amount: 721,
-    status: "failed",
-    email: "carmella@hotmail.com",
-  },
-]
+// const data: Mod[] = [
+//   {
+//     name: "m5gr84i9",
+//     active: false,
+//   },
+//   {
+//     name: "3u1reuv4",
+//     active: false,
+//   }
+// ]
  
-export type Payment = {
-  id: string
-  amount: number
-  status: "pending" | "processing" | "success" | "failed"
-  email: string
+export type Mod = {
+  name: string
+  active: boolean
 }
  
-export const columns: ColumnDef<Payment>[] = [
+export const columns: ColumnDef<Mod>[] = [
   {
-    id: "select",
+    accessorKey: "name",
+    header: "Name",
+    cell: ({ row }) => (
+      <div className="capitalize">{row.getValue("name")}</div>
+    ),
+  },
+  {
+    id: "action",
     header: ({ table }) => (
       <div></div>
+      // <Checkbox
+      //   checked={
+      //     table.getIsAllPageRowsSelected() ||
+      //     (table.getIsSomePageRowsSelected() && "indeterminate")
+      //   }
+      //   onCheckedChange={(value: any) => table.toggleAllPageRowsSelected(!!value)}
+      //   aria-label="Select all"
+      // />
     ),
     cell: ({ row }) => (
       <div></div>
+      // <Checkbox
+      //   checked={row.getIsSelected()}
+      //   onCheckedChange={(value: any) => row.toggleSelected(!!value)}
+      //   aria-label="Select row"
+      // />
     ),
     enableSorting: false,
     enableHiding: false,
   },
   {
-    accessorKey: "status",
-    header: "Status",
+    accessorKey: "active",
+    header: () => <div className="text-right px-2">Active</div>,
     cell: ({ row }) => (
-      <div className="capitalize">{row.getValue("status")}</div>
+      <div className="flex justify-end items-center">
+        <Switch defaultSelected/>
+      </div>
+      // <div className="capitalize">{row.getValue("active")}</div>
+      
     ),
   },
-  {
-    accessorKey: "email",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Email
-        </Button>
-      )
-    },
-    cell: ({ row }) => <div className="lowercase">{row.getValue("email")}</div>,
-  },
-  {
-    accessorKey: "amount",
-    header: () => <div className="text-right">Amount</div>,
-    cell: ({ row }) => {
-      const amount = parseFloat(row.getValue("amount"))
+  // {
+  //   id: "actions",
+  //   enableHiding: false,
+  //   cell: ({ row }) => {
+  //     const payment = row.original
  
-      // Format the amount as a dollar amount
-      const formatted = new Intl.NumberFormat("en-US", {
-        style: "currency",
-        currency: "USD",
-      }).format(amount)
- 
-      return <div className="text-right font-medium">{formatted}</div>
-    },
-  },
-  {
-    id: "actions",
-    enableHiding: false,
-    cell: ({ row }) => {
-      const payment = row.original
- 
-      return (
-        <div></div>
-      )
-    },
-  },
+  //     return (
+  //       <div></div>
+  //     )
+  //   },
+  // },
 ]
  
 export function ModsTable() {
+  const [data, setData] = useState<Mod[]>([]); 
+  
+  useEffect(() => {
+    const fetchFileNames = async () => {
+      const storedPath = localStorage.getItem('gameFolderPath');
+      try {
+        const response: string[] = await invoke('read_files_from_folder', { folderPath: storedPath + '/instances/Vanilla/mods' });
+        // setFileNames(response);
+        console.log(response);
+        
+        const tempData: Mod[] = response.map(mod => ({
+          name:mod,
+          active: response.includes(mod)
+        }));
+        setData(tempData)
+       
+        
+      } catch (error) {
+        console.error('Error fetching file names:', error);
+      }
+    };
+
+    fetchFileNames();
+  }, []);
+
+  // table
+
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
@@ -152,18 +154,18 @@ export function ModsTable() {
     <div className="w-full">
       <div className="flex items-center py-4">
         <Input
-          placeholder="Filter emails..."
-          value={(table.getColumn("email")?.getFilterValue() as string) ?? ""}
+          placeholder="Filter mods..."
+          value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
-            table.getColumn("email")?.setFilterValue(event.target.value)
+            table.getColumn("name")?.setFilterValue(event.target.value)
           }
           className="max-w-sm"
         />
 
       </div>
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
+      <div className="rounded-none border">
+        <Table className="">
+          <TableHeader className="sticky top-0 z-40 bg-white">
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
@@ -210,31 +212,9 @@ export function ModsTable() {
             )}
           </TableBody>
         </Table>
+        
       </div>
-      <div className="flex items-center justify-end space-x-2 py-4">
-        <div className="flex-1 text-sm text-muted-foreground">
-          {table.getFilteredSelectedRowModel().rows.length} of{" "}
-          {table.getFilteredRowModel().rows.length} row(s) selected.
-        </div>
-        <div className="space-x-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}
-          >
-            Previous
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
-          >
-            Next
-          </Button>
-        </div>
-      </div>
+      
     </div>
   )
 }
