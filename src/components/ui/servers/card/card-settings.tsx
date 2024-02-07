@@ -21,11 +21,11 @@ interface CardSettingsProps {
 }
 
 const CardSettings: React.FC<CardSettingsProps> = ({ link, name }) => {
-  // const {isOpen, onOpen, onOpenChange} = useDisclosure();
+  const {isOpen, onOpen, onOpenChange} = useDisclosure();
   return (
     <>
       <Tooltip placement="top" content="Модификация" color="secondary" className='text-primary bg-default-100'>
-        <div className='bg-default-100 h-14 w-14 rounded-lg flex justify-center items-center'>
+        <div className='bg-default-100 h-14 w-14 rounded-lg flex justify-center items-center cursor-pointer'>
           <Wrench size={28}></Wrench>
         </div>
       </Tooltip>

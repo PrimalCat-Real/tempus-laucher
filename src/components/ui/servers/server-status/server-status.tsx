@@ -15,12 +15,20 @@ interface ServerStatusResponse {
 
 const ServerStatus = () => {
 
-const [status, setStatus] = useState<ServerStatusResponse>();
+const [status, setStatus] = useState<ServerStatusResponse>(
+  {
+    "online": false,
+    "players": {
+        "online": 0,
+        "max": 0,
+    },
+}
+);
 
 useEffect(() => {
     const fetchServerStatus = async () => {
       try {
-        const address = '95.216.92.72:25811';
+        const address = 'tempusvanilla.gomc.fun';
         const query = true; // Enable query lookup
         const timeout = 5.0; // Timeout in seconds
   
@@ -30,7 +38,9 @@ useEffect(() => {
         }
   
         const data = await response.json();
-        setStatus(data);
+        status.online = data.online
+        status.players = data.players
+        setStatus(status);
       } catch (error) {
         console.error('Error fetching server status:', error);
       }
@@ -52,9 +62,11 @@ useEffect(() => {
       <div className='flex z-20  items-center gap-2 self-end indicator-bg-color translate-x-1 min-h-[30px] px-4 rounded-l-lg' style={{ pointerEvents: 'none' }}>
           <span className="relative flex h-2 w-2">
               <span className={cn("transition-colors animate-ping absolute inline-flex h-full w-full rounded-full  opacity-75", status && status.online  ? 'bg-green-400' : 'bg-red-500')}></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+              <span className={cn("relative inline-flex rounded-full h-2 w-2 bg-green-500", status && status.online  ? 'bg-green-400' : 'bg-red-500')}></span>
           </span>
-          {status?.players.online} / {status?.players.max}
+          {status && status.players && (
+            <>{status.players.online} / {status.players.max}</>
+          )}
       </div>
   )
 }
