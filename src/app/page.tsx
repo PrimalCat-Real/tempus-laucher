@@ -12,6 +12,11 @@ import { checkUpdate, onUpdaterEvent } from '@tauri-apps/api/updater';
 // console.log('Updater event', error, status)
 // })
 
+// onUpdaterEvent(({ error, status }) => {
+//   // This will log all updater events, including status updates and errors.
+//   alert('Updater event', error, status)
+// })
+
 export default function Home() {
   
   useEffect(() => {
@@ -21,6 +26,9 @@ export default function Home() {
         const { shouldUpdate, manifest } = await checkUpdate();
         console.log("shouldUpdate:", shouldUpdate);
         console.log("manifest:", manifest);
+        if(shouldUpdate){
+          alert("update is here")
+        }
         alert(shouldUpdate)
       } catch (error) {
         console.error("Error fetching updates:", error);
@@ -28,6 +36,7 @@ export default function Home() {
     };
 
     fetchUpdates();
+
     // This code will run on the client side
     const userName = localStorage.getItem('userName');
     if (userName !== null) {
