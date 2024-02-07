@@ -134,7 +134,7 @@
         "installMode": "passive"
       },
       "endpoints": [
-        "https://releases.myapp.com/{{target}}/{{arch}}/{{current_version}}"
+        "https://tempus.rest:8000/tauri-releases/tempus-launcher/windows/{{version}}"
       ],
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEJDMjIyOThCQjcxMjg0MUIKUldRYmhCSzNpeWtpdklVU2s4cXUwUE9sNTNGRWJGb1JvMDBkRTZjUUF5ak1uR0c1U3hDWWZvQUQK"
     },

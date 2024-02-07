@@ -16,7 +16,7 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
 
     - name: Setup Node.js
       uses: actions/setup-node@v4
@@ -29,14 +29,14 @@ jobs:
 
     - name: Install dependencies
       run: |
-        npm install && npm run tauri build
+        npm install && npm run build
 
-    - name: Build Changelog
-      id: build_changelog
-      run: echo "changelog=- ADD CHANGELOG" >> $GITHUB_ENV
+    # - name: Build Changelog
+    #   id: build_changelog
+    #   run: echo "changelog=- ADD CHANGELOG" >> $GITHUB_ENV
 
-    - name: Build Tauri
-      uses: tauri-apps/tauri-action@v0
+
+    - uses: tauri-apps/tauri-action@v0
       env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
