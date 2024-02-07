@@ -57,10 +57,6 @@ const ServersPage = () => {
                                     </CardAction>
                                   <CardDescribe>
                                   </CardDescribe>
-                                  
-                                   
-       
-                                  
                               </div>
                           </div>
                       </CarouselItem>
