@@ -6,6 +6,7 @@ import CardSettings from '@/components/ui/servers/card/card-settings'
 import ServerStatus from '@/components/ui/servers/server-status/server-status'
 import { ServerData } from '@/lib/types'
 import {Image} from "@nextui-org/react";
+import { onUpdaterEvent } from '@tauri-apps/api/updater'
 import React from 'react'
 
 const ServersPage = () => {
@@ -25,7 +26,7 @@ const ServersPage = () => {
         // }
     ]
 
-
+    
   return (
 
       <div className='flex flex-col text-primary w-full gap-4'>
