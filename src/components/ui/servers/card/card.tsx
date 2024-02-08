@@ -226,9 +226,9 @@ const CardAction: React.FC<CardActionProps> = () => {
       await invoke('create_directory', { dist: selectedFolderPath }).catch(err => console.error(err));
       await invoke('create_directory', { dist: selectedFolderPath+'/java' }).catch(err => console.error(err));
       await invoke('create_directory', { dist: selectedFolderPath+'/instances' }).catch(err => console.error(err));
-      alert(JAVA_URL_17)
-      alert(DATASTORE_URL)
-      alert(VANILLA_URL)
+      // alert(JAVA_URL_17)
+      // alert(DATASTORE_URL)
+      // alert(VANILLA_URL)
       // загрузка джава и распаковка
       await downloadAndUnzip(selectedFolderPath+'/java', JAVA_URL_17, '17.0.1+12.zip', 'Java')
       await downloadAndUnzip(selectedFolderPath + '', DATASTORE_URL, 'datastore', 'Minecraft')
