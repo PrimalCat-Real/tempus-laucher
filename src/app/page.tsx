@@ -2,7 +2,9 @@
 
 import { useEffect } from 'react';
 import { redirect } from 'next/navigation';
-import { checkUpdate, onUpdaterEvent } from '@tauri-apps/api/updater';
+import { checkUpdate, installUpdate, onUpdaterEvent } from '@tauri-apps/api/updater';
+import { toast } from 'sonner';
+import { relaunch } from '@tauri-apps/api/process';
 
 
 // console.log("test");
@@ -26,14 +28,24 @@ export default function Home() {
         const { shouldUpdate, manifest } = await checkUpdate();
         console.log("shouldUpdate:", shouldUpdate);
         console.log("manifest:", manifest);
-        // if(shouldUpdate){
-        //   alert("update is here")
-        // }
+        if(shouldUpdate){
+          // alert("update is here")
+          toast('Доступно обновление лаунчера', {
+            action: {
+              label: 'Обновить',
+              onClick: () => {
+                installUpdate().then(relaunch);
+              }
+            },
+          })
+        }
         // alert(shouldUpdate)
       } catch (error) {
         console.error("Error fetching updates:", error);
       }
     };
+
+
 
     fetchUpdates();
 
