@@ -3,7 +3,7 @@
 import {createDir, writeBinaryFile} from '@tauri-apps/api/fs';
 
 import { CircularProgress, Progress, Tooltip } from '@nextui-org/react'
-import { Download, FolderSearch, PackageOpen } from 'lucide-react'
+import { Download, FolderSearch, PackageOpen, RefreshCcw } from 'lucide-react'
 import React, { SetStateAction, useEffect, useState } from 'react'
 import {open, save} from '@tauri-apps/api/dialog'
 import {Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, useDisclosure} from "@nextui-org/react";
@@ -14,6 +14,7 @@ import { Command } from '@tauri-apps/api/shell'
 import { listen, Event  } from '@tauri-apps/api/event';
 import Play from '@/components/icons/play';
 import { checkFileExisting, downloadAndUnzip } from '@/lib/utils';
+import { ResourcePack, findDifferentKeys, getResourcePack } from '@/lib/update';
 
 
 interface CardActionProps {
@@ -91,21 +92,53 @@ const CardAction: React.FC<CardActionProps> = () => {
   }, []);
 
   useEffect(() => {
-    const checkFolderExist = async () => {
-      const isGameExist = await checkFileExisting(selectedFolderPath+'\\instances\\Vanilla')
-      const isDatastore = await checkFileExisting(selectedFolderPath+'\\datastore')
-      const isJava = await checkFileExisting(selectedFolderPath+'\\java')
+    // check updates
+    const fetchData = async () => {
 
-      if(isGameExist && isDatastore && isJava){
-        setStatus("play")
-      }else if(false){
-        console.log("update this");
-      }else{
-        setStatus("download")
+      try {
+        let localObj: ResourcePack | null = null;
+
+        const localObjString: string | null = await invoke('read_json_file', { path: `${selectedFolderPath}\\instances\\Vanilla\\versions.json` });
+
+        if (localObjString !== null) {
+            localObj = JSON.parse(localObjString);
+        }
+
+        console.log('Local Object:', localObj);
+
+        const resourcePackUrl = `https://tempus.rest:8000/versions/vanilla/versions.json`;
+        const remoteObj = await getResourcePack(resourcePackUrl);
+        const isEqual = JSON.stringify(localObj?.vanilla.resourcepack_tempus) === JSON.stringify(remoteObj?.vanilla.resourcepack_tempus);
+
+        console.log('Remote Object:', remoteObj);
+
+
+        if (!isEqual) {
+          setStatus("update");
+          const diffLog = findDifferentKeys(remoteObj, localObj)
+          console.log(diffLog);
+          
+        }
+        
+      } catch (err) {
+        console.error('Error comparing versions:', err);
       }
-    }
-    checkFolderExist();
-  })
+    };
+  
+    const checkFolderExist = async () => {
+      const isGameExist = await checkFileExisting(selectedFolderPath + '\\instances\\Vanilla');
+      const isDatastore = await checkFileExisting(selectedFolderPath + '\\datastore');
+      const isJava = await checkFileExisting(selectedFolderPath + '\\java');
+  
+      if (isGameExist && isDatastore && isJava) {
+        setStatus("play");
+      } else {
+        setStatus("download");
+      }
+    };
+  
+    checkFolderExist().then(fetchData);
+  }, [selectedFolderPath]);
   
   useEffect(() => {
     
@@ -137,6 +170,29 @@ const CardAction: React.FC<CardActionProps> = () => {
     // });
     
   }, []);
+
+  // check updates modpack
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     // @TODO move to variable
+  //     const resourcePackUrl = `https://tempus.rest:8000/versions/vanilla/versions.json`; 
+  //     await getResourcePack(resourcePackUrl).then((data) => {
+  //         if (data) {
+  //             console.log(data);
+  //         }
+  //     });
+  //     try {
+  //       console.log(selectedFolderPath+'\\instances\\Vanilla\\versions.json'); 
+  //       const result = await invoke('read_json_file', { path: selectedFolderPath+'\\instances\\Vanilla\\versions.json' });
+  //       console.log('File contents:', result);
+  //     } catch (err) {
+  //       console.error('Error reading file:', err);
+  //     }
+  //   };
+
+  //   fetchData();
+  // }, []); 
+
 
 
 
@@ -230,14 +286,16 @@ const CardAction: React.FC<CardActionProps> = () => {
       </div>}
       <Tooltip
           placement="top"
-          content={status === "play" ? "Играть" : "Скачать"}
+          content={status === "play" ? "Играть" : (status === "update" ? "Обновить" :"Скачать") }
           color="secondary"
           className='text-primary bg-default-100'
         >
           <button onClick={handleAction} className='bg-default-100 h-14 w-14 rounded-md flex justify-center items-center cursor-pointer z-20'>
             
               {status === "play" ? (
-                <Play></Play>
+                  <Play></Play>
+              ) : status === "update" ? (
+                  <RefreshCcw ></RefreshCcw >
               ) : (
                 <Download></Download>
               )}

@@ -76,7 +76,7 @@ export const columns: ColumnDef<Mod>[] = [
     header: () => <div className="text-right px-2">Active</div>,
     cell: ({ row }) => (
       <div className="flex justify-end items-center">
-        <Switch defaultSelected/>
+        <Switch size="sm" defaultSelected/>
       </div>
       // <div className="capitalize">{row.getValue("active")}</div>
       
@@ -105,12 +105,16 @@ export function ModsTable() {
         const response: string[] = await invoke('read_files_from_folder', { folderPath: storedPath + '/instances/Vanilla/mods' });
         // setFileNames(response);
         console.log(response);
-        
-        const tempData: Mod[] = response.map(mod => ({
-          name:mod,
-          active: response.includes(mod)
+        response.map(mod => ({
+            name:mod,
+            active: !response.includes(".disabled"),
         }));
-        setData(tempData)
+        
+        // const tempData: Mod[] = response.map(mod => ({
+        //   name:mod,
+        //   active: response.includes(mod)
+        // }));
+        // setData(tempData)
        
         
       } catch (error) {
@@ -137,7 +141,6 @@ export function ModsTable() {
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: setColumnVisibility,

@@ -5,6 +5,7 @@ use std::fs::File;
 use std::io::{Cursor, Write};
 use std::fs::create_dir_all;
 use std::sync::Arc;
+use std::io::prelude::*;
 
 use commands::CommandError;
 use tauri::api::process::Command;
@@ -13,6 +14,16 @@ use zip::ZipArchive;
 
 mod commands;
 mod network;
+
+#[tauri::command]
+async fn read_json_file(path: String) -> Result<String, String> {
+    let mut file = File::open(&path).map_err(|err| format!("{}", err))?; // Handle the error here
+    let mut contents = String::new();
+    file.read_to_string(&mut contents).map_err(|err| format!("{}", err))?; // Handle the error here
+    Ok(contents)
+}
+
+
 
 #[tauri::command]
 fn ping(address: &str) -> String {
@@ -140,7 +151,7 @@ async fn unzip_handler(window: tauri::Window, source: &str, destination: &str, u
     Ok(())
 }
 
-  
+
 
 #[tauri::command]
 fn create_directory(dist: String) -> Result<(), String> {
@@ -177,7 +188,7 @@ async fn start_command(window: tauri::Window, globalPath: String, gameName: Stri
 
 fn main() {
   tauri::Builder::default()
-    .invoke_handler(tauri::generate_handler![ping, main_download_file, create_directory, unzip_handler, directory_exists, start_command, read_files_from_folder])
+    .invoke_handler(tauri::generate_handler![ping, main_download_file, create_directory, unzip_handler, directory_exists, start_command, read_files_from_folder, read_json_file])
     .run(tauri::generate_context!())
     
     .expect("error while running tauri application");
