@@ -13,7 +13,7 @@ import { invoke } from '@tauri-apps/api/tauri';
 import { Command } from '@tauri-apps/api/shell'
 import { listen, Event  } from '@tauri-apps/api/event';
 import Play from '@/components/icons/play';
-import { checkFileExisting, downloadAndUnzip } from '@/lib/utils';
+import { checkFileExisting, downloadAndUnzip, downloadFile } from '@/lib/utils';
 import { ResourcePack, findDifferentKeys, getResourcePack } from '@/lib/update';
 
 
@@ -216,14 +216,20 @@ const CardAction: React.FC<CardActionProps> = () => {
   };
 
   const handleProcces = async () => {
+    if(status === 'update'){
+      await downloadFile(selectedFolderPath + '\\instances\\Vanilla', 'https://tempus.rest/files/versions.json', 'versions.json', 'Версии');
+      await downloadFile(selectedFolderPath + '\\instances\\Vanilla\\resourcepacks', 'https://cdn.modrinth.com/data/r4GILswZ/versions/gWTrUifI/Faithful%2064x.zip', 'Faithful.zip', 'ресурс пак');
 
-    await invoke('create_directory', { dist: selectedFolderPath }).catch(err => console.error(err));
-    await invoke('create_directory', { dist: selectedFolderPath+'/java' }).catch(err => console.error(err));
-    await invoke('create_directory', { dist: selectedFolderPath+'/instances' }).catch(err => console.error(err));
-    // загрузка джава и распаковка
-    await downloadAndUnzip(selectedFolderPath+'/java', JAVA_URL_17, '17.0.1+12.zip', 'Java')
-    await downloadAndUnzip(selectedFolderPath + '', DATASTORE_URL, 'datastore', 'Minecraft')
-    await downloadAndUnzip(selectedFolderPath+'/instances', VANILLA_URL, 'Vanilla.zip', 'Vanilla')
+    }else{
+      await invoke('create_directory', { dist: selectedFolderPath }).catch(err => console.error(err));
+      await invoke('create_directory', { dist: selectedFolderPath+'/java' }).catch(err => console.error(err));
+      await invoke('create_directory', { dist: selectedFolderPath+'/instances' }).catch(err => console.error(err));
+      // загрузка джава и распаковка
+      await downloadAndUnzip(selectedFolderPath+'/java', JAVA_URL_17, '17.0.1+12.zip', 'Java')
+      await downloadAndUnzip(selectedFolderPath + '', DATASTORE_URL, 'datastore', 'Minecraft')
+      await downloadAndUnzip(selectedFolderPath+'/instances', VANILLA_URL, 'Vanilla.zip', 'Vanilla')
+    }
+    
     // close dialog
     onClose()
     setStatus("play")
@@ -250,15 +256,29 @@ const CardAction: React.FC<CardActionProps> = () => {
       onOpen()
     }else if(status === "play"){
       await handlePlay()
+    }else if(status === "update"){
+      await updateGame()
     }
     
+  }
+
+  const updateGame = async () => {
+    try{
+      // new Command('echo', ['Test'])
+      // change update link 
+      onOpen()
+      
+  
+    }catch (error) {
+      console.error('Error update game', error);
+    }
   }
 
 
   const handlePlay = async () => {
     try{
       // new Command('echo', ['Test'])
-      await invoke('start_command', {globalPath: "D:\\Games\\tempus", gameName: "Vanilla", userName: userName}).catch(err => console.error(err));
+      await invoke('start_command', {globalPath: selectedFolderPath, gameName: "Vanilla", userName: userName}).catch(err => console.error(err));
       
     }catch (error) {
       console.error('Error start game', error);

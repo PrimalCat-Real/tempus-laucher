@@ -35,11 +35,11 @@ export async function downloadAndUnzip(downloadPath: string, downloadUrl: string
     }
 }
 
-export async function downloadFile(downloadPath: String, fileName: string, downloadName: String){
+export async function downloadFile(downloadPath: String, downloadUrl: string, fileName: string, downloadName: String){
     try {
       await invoke('main_download_file', {
-        url: 'http://158.220.109.29/files/datastore.zip',
-        destination: `${downloadPath}/${fileName}.zip`,
+        url: downloadUrl,
+        destination: `${downloadPath}/${fileName}`,
         downloadName: `Загрузка ${downloadName}`
       }).catch((err: any) => console.error(err));
     } catch (error) {
