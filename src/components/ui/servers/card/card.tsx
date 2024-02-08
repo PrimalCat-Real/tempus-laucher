@@ -47,10 +47,10 @@ const CardAction: React.FC<CardActionProps> = () => {
   const [selectedFolderPath, setSelectedFolderPath] = useState<string | string[]>();
 
   const gameApiUrl =  process.env.GAME_API_BASE_URL
-  const JAVA_URL_17 = `https://${gameApiUrl}/files/java/17.0.1+12.zip`;
+  const JAVA_URL_17 = `https://tempus.rest/files/java/17.0.1+12.zip`;
 
-  const VANILLA_URL = `https://${gameApiUrl}/files/Vanilla.zip`;
-  const DATASTORE_URL = `https://${gameApiUrl}/files/datastore.zip`;
+  const VANILLA_URL = `https://tempus.rest/files/Vanilla.zip`;
+  const DATASTORE_URL = `https://tempus.rest/files/datastore.zip`;
 
   const VANILLA_PATH = `${selectedFolderPath}/instances/Vanilla`
 
