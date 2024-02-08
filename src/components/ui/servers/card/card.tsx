@@ -218,9 +218,9 @@ const CardAction: React.FC<CardActionProps> = () => {
   const handleProcces = async () => {
     if(status === 'update'){
       await downloadFile(selectedFolderPath + '\\instances\\Vanilla', 'https://tempus.rest/files/Vanilla/versions.json', 'versions.json', 'Версии');
-      await downloadFile(selectedFolderPath + '\\instances\\Vanilla\\resourcepacks', 'https://tempus.rest/files/Vanilla/resourcepacks/', '	Faithful_64x.zip', 'Faithful');
-      await downloadFile(selectedFolderPath + '\\instances\\Vanilla\\resourcepacks', 'https://tempus.rest/files/Vanilla/resourcepacks/', 'Tempus_pack_.zip', 'Tempus_pack');
-      await downloadFile(selectedFolderPath + '\\instances\\Vanilla\\resourcepacks', 'https://tempus.rest/files/Vanilla/resourcepacks/', 'ksepsp-9-0-3.zip', 'ksepsp');
+      await downloadFile(selectedFolderPath + '\\instances\\Vanilla\\resourcepacks', 'https://tempus.rest/files/Vanilla/resourcepacks/Faithful_64x.zip', 'Faithful_64x.zip', 'Faithful');
+      await downloadFile(selectedFolderPath + '\\instances\\Vanilla\\resourcepacks', 'https://tempus.rest/files/Vanilla/resourcepacks/Tempus_pack_.zip', 'Tempus_pack_.zip', 'Tempus_pack');
+      await downloadFile(selectedFolderPath + '\\instances\\Vanilla\\resourcepacks', 'https://tempus.rest/files/Vanilla/resourcepacks/ksepsp-9-0-3.zip', 'ksepsp-9-0-3.zip', 'ksepsp');
 
     }else{
       await invoke('create_directory', { dist: selectedFolderPath }).catch(err => console.error(err));
