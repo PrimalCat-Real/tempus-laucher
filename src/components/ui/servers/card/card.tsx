@@ -217,8 +217,10 @@ const CardAction: React.FC<CardActionProps> = () => {
 
   const handleProcces = async () => {
     if(status === 'update'){
-      await downloadFile(selectedFolderPath + '\\instances\\Vanilla', 'https://tempus.rest/files/versions.json', 'versions.json', 'Версии');
-      await downloadFile(selectedFolderPath + '\\instances\\Vanilla\\resourcepacks', 'https://cdn.modrinth.com/data/r4GILswZ/versions/gWTrUifI/Faithful%2064x.zip', 'Faithful.zip', 'ресурс пак');
+      await downloadFile(selectedFolderPath + '\\instances\\Vanilla', 'https://tempus.rest/files/Vanilla/versions.json', 'versions.json', 'Версии');
+      await downloadFile(selectedFolderPath + '\\instances\\Vanilla\\resourcepacks', 'https://tempus.rest/files/Vanilla/resourcepacks/', '	Faithful_64x.zip', 'Faithful');
+      await downloadFile(selectedFolderPath + '\\instances\\Vanilla\\resourcepacks', 'https://tempus.rest/files/Vanilla/resourcepacks/', 'Tempus_pack_.zip', 'Tempus_pack');
+      await downloadFile(selectedFolderPath + '\\instances\\Vanilla\\resourcepacks', 'https://tempus.rest/files/Vanilla/resourcepacks/', 'ksepsp-9-0-3.zip', 'ksepsp');
 
     }else{
       await invoke('create_directory', { dist: selectedFolderPath }).catch(err => console.error(err));
