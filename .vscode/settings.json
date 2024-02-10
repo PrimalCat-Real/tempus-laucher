@@ -12,5 +12,8 @@
     ".\\src-tauri\\Cargo.toml",
     ".\\src-tauri\\Cargo.toml",
     ".\\src-tauri\\Cargo.toml"
+  ],
+  "cSpell.words": [
+    "persistor"
   ]
 }

@@ -1,18 +1,21 @@
 "use client"
 
+import { usernameState } from '@/lib/user'
 import { Button } from '@nextui-org/button'
 import { Input } from '@nextui-org/input'
 import { redirect, useRouter } from 'next/navigation'
 
 import React, { useState } from 'react'
+import { useRecoilState } from 'recoil'
 
 const Page = () => {
-  const [userName, setUserName] = useState('');
+  // const [userName, setUserName] = useState('');
+  const [userName, setUserName] = useRecoilState(usernameState)
   const router = useRouter(); // Initialize the router
 
   const handleLogin = async () => {
     // Save the username to local storage
-    localStorage.setItem('userName', userName);
+    // localStorage.setItem('userName', userName);
     
     // Use the router to navigate to /servers
     router.push('/servers');

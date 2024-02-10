@@ -1,6 +1,4 @@
-import Header from "@/components/ui/header/header";
 import { Providers } from "../providers";
-import Sidebar from "@/components/ui/sidebar/sidebar";
 import Logo from "@/components/icons/logo";
 
 export default function RootLayout({

@@ -93,7 +93,7 @@ checksum = "080e9890a082662b09c1ad45f567faeeb47f22b5fb23895fbe1e651e718e25ca"
 
 [[package]]
 name = "app"
-version = "0.0.5"
+version = "0.0.4"
 dependencies = [
  "backtrace",
  "chrono",
@@ -118,6 +118,7 @@ dependencies = [
  "tar",
  "tauri",
  "tauri-build",
+ "tauri-plugin-fs-extra",
  "tauri-plugin-upload",
  "thiserror",
  "tokio",
@@ -4366,9 +4367,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "tauri-plugin-fs-extra"
+version = "0.0.0"
+source = "git+https://github.com/tauri-apps/plugins-workspace?branch=v1#8cb4e3d14de27188465ae1059886c2765854aa16"
+dependencies = [
+ "log",
+ "serde",
+ "serde_json",
+ "tauri",
+ "thiserror",
+]
+
+[[package]]
 name = "tauri-plugin-upload"
 version = "0.0.0"
-source = "git+https://github.com/tauri-apps/plugins-workspace?branch=v1#056a458d3025963874b113ff6cfe897373baf944"
+source = "git+https://github.com/tauri-apps/plugins-workspace?branch=v1#8cb4e3d14de27188465ae1059886c2765854aa16"
 dependencies = [
  "futures-util",
  "log",

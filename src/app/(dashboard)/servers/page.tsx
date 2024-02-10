@@ -1,16 +1,20 @@
-import NewsBanner from '@/components/ui/banner/banner'
+import NewsBanner from '@/components/banner/banner'
 import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel'
-import CardAction from '@/components/ui/servers/card/card'
-import CardDescribe from '@/components/ui/servers/card/card-describe'
-import CardSettings from '@/components/ui/servers/card/card-settings'
-import ServerStatus from '@/components/ui/servers/server-status/server-status'
+import CardAction from '@/components/servers/card/card-action'
+import CardDescribe from '@/components/servers/card/card-describe'
+import CardSettings from '@/components/servers/card/card-settings'
+import ServerStatus from '@/components/servers/server-status/server-status'
 import { ServerData } from '@/lib/types'
 import {Image} from "@nextui-org/react";
 import { onUpdaterEvent } from '@tauri-apps/api/updater'
 import React from 'react'
+import { toast } from 'sonner'
+
+
 
 const ServersPage = () => {
-    // const javaPath = getJava17Path
+    
+    console.log('My first toast');
     const serversData: ServerData[] = [
         {
             name: "Vanilla",

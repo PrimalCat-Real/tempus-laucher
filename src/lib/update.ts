@@ -1,3 +1,7 @@
+import { relaunch } from "@tauri-apps/api/process";
+import { checkUpdate, installUpdate } from "@tauri-apps/api/updater";
+import { toast } from "sonner";
+
 export interface ResourcePack {
     vanilla: {
         resourcepack_tempus: string;
@@ -39,3 +43,25 @@ export function findDifferentKeys(obj1: any, obj2: any, parentKey = ''): string[
 
     return differentKeys;
 }
+
+
+// launcher
+export async function checkAndUpdateLauncher() {
+    try {
+      const { shouldUpdate, manifest } = await checkUpdate();
+    //   console.log("shouldUpdate:", shouldUpdate);
+    //   console.log("manifest:", manifest);
+      if(shouldUpdate){
+        toast('Доступно обновление лаунчера', {
+            action: {
+                label: 'Обновить',
+                onClick: () => {
+                installUpdate().then(relaunch);
+                }
+            },
+        })
+      }
+    } catch (error) {
+      console.error("Error fetching updates:", error);
+    }
+  }

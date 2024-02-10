@@ -21,3 +21,12 @@ export type ServerData = {
   gameVersion: string,
   buildVersion: string
 }
+
+export interface ServerStatusResponse {
+  online: boolean;
+  players: {
+    online: number;
+    max: number;
+  };
+  // Add more properties as needed
+}

@@ -1,11 +1,12 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 use std::path::{Path, PathBuf};
 use std::fs;
-use std::fs::File;
-use std::io::{Cursor, Write};
+use std::io::{Cursor, Read, Seek, SeekFrom, Write};
 use std::fs::create_dir_all;
 use std::sync::Arc;
 use std::io::prelude::*;
+use serde_json::Value;
+use std::fs::{File, OpenOptions};
 
 use commands::CommandError;
 use tauri::api::process::Command;
@@ -15,12 +16,16 @@ use zip::ZipArchive;
 mod commands;
 mod network;
 
+
+
+
 #[tauri::command]
-async fn read_json_file(path: String) -> Result<String, String> {
-    let mut file = File::open(&path).map_err(|err| format!("{}", err))?; // Handle the error here
-    let mut contents = String::new();
-    file.read_to_string(&mut contents).map_err(|err| format!("{}", err))?; // Handle the error here
-    Ok(contents)
+async fn rename_file(path: String, name: String) -> Result<(), String> {
+    // Попытка переименования файла
+    match fs::rename(&path, &name) {
+        Ok(_) => Ok(()), // Возвращаем Ok, если успешно
+        Err(err) => Err(err.to_string()), // Возвращаем ошибку, если не удалось переименовать
+    }
 }
 
 
@@ -186,9 +191,92 @@ async fn start_command(window: tauri::Window, globalPath: String, gameName: Stri
     
 }
 
+#[tauri::command]
+async fn read_json_file(path: String) -> Result<String, String> {
+    let result = read_json(path).await;
+    match result {
+        Ok(contents) => Ok(contents),
+        Err(err) => Err(format!("Failed to read JSON file: {}", err)),
+    }
+}
+
+async fn read_json(path: String) -> Result<String, String> {
+    let mut file = File::open(&path)
+        .map_err(|err| format!("Failed to open file: {}", err))?;
+
+    let mut contents = String::new();
+    file.read_to_string(&mut contents)
+        .map_err(|err| format!("Failed to read file: {}", err))?;
+
+    Ok(contents)
+}
+
+// #[tauri::command]
+// async fn update_config_value(key: String, new_value: String, config_path: String) -> Result<(), String> {
+//     // Read the current contents of the config file
+//     let mut file = OpenOptions::new()
+//         .read(true)
+//         .write(true)
+//         .open(&config_path)
+//         .map_err(|err| format!("Failed to open config file: {}", err))?;
+
+//     let mut contents = String::new();
+//     file.read_to_string(&mut contents)
+//         .map_err(|err| format!("Failed to read config file: {}", err))?;
+
+//     // Parse the contents as JSON
+//     let mut config: Value = serde_json::from_str(&contents)
+//         .map_err(|err| format!("Failed to parse config file as JSON: {}", err))?;
+
+//     // Update the value corresponding to the key
+//     config[key] = serde_json::Value::String(new_value);
+
+//     // Seek to the beginning of the file and overwrite its contents with the updated JSON
+//     file.seek(SeekFrom::Start(0))
+//         .map_err(|err| format!("Failed to seek to the beginning of config file: {}", err))?;
+
+//     file.write_all(serde_json::to_string_pretty(&config).unwrap().as_bytes())
+//         .map_err(|err| format!("Failed to write updated config to file: {}", err))?;
+
+//     Ok(())
+// }
+
+
+
+#[tauri::command]
+async fn write_json(dir: String, name: String, data: String, window: tauri::Window) -> Result<(), String> {
+    use std::fs::File;
+    use std::io::prelude::*;
+    use serde_json;
+
+    // Create a JSON string from the input data
+    // let json_data = match serde_json::to_string(&data) {
+    //     Ok(json) => json,
+    //     Err(err) => return Err(format!("Failed to serialize data to JSON: {}", err)),
+    // };
+
+    // Construct the file path
+    let file_path = format!("{}/{}.json", dir, name);
+
+    // Open the file for writing
+    let mut file = match File::create(&file_path) {
+        Ok(file) => file,
+        Err(err) => return Err(format!("Failed to create file: {}", err)),
+    };
+
+    // Write the JSON data to the file
+    if let Err(err) = file.write_all(data.as_bytes()) {
+        return Err(format!("Failed to write to file: {}", err));
+    }
+
+    Ok(())
+}
+
+
+
 fn main() {
   tauri::Builder::default()
-    .invoke_handler(tauri::generate_handler![ping, main_download_file, create_directory, unzip_handler, directory_exists, start_command, read_files_from_folder, read_json_file])
+    .invoke_handler(tauri::generate_handler![ping, write_json, main_download_file, create_directory, unzip_handler, directory_exists, start_command, read_files_from_folder, read_json_file])
     .run(tauri::generate_context!())
     
     .expect("error while running tauri application");

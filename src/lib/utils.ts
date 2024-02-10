@@ -26,7 +26,7 @@ export async function downloadAndUnzip(downloadPath: string, downloadUrl: string
       await invoke('unzip_handler', {
         source: `${downloadPath}/${fileName}.zip`,
         destination: `${downloadPath}`,
-        unzipName: `Разпаковка ${downloadName}`,
+        unzipName: `Распаковка ${downloadName}`,
       }).catch((err: any) => console.error(err));
 
       console.log('File downloaded successfully');

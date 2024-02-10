@@ -1,6 +1,7 @@
-import Header from "@/components/ui/header/header";
+import Header from "@/components/header/header";
 import { Providers } from "../providers";
-import Sidebar from "@/components/ui/sidebar/sidebar";
+import Sidebar from "@/components/sidebar/sidebar";
+
 
 export default function RootLayout({
 	children,
