@@ -1,8 +1,13 @@
 import { invoke } from "@tauri-apps/api/tauri";
 import { downloadAndUnzip, downloadFile } from "../utils";
 import { DATASTORE_URL, JAVA_URL_17, VANILLA_URL } from "../data";
+import { recoilPersist } from "recoil-persist";
+import { atom, useRecoilState } from "recoil";
+import { downloadStatus } from "../types";
+
 
 export const handleDownloadProcess = async (selectedFolderPath: string) => {
+    
     //   await downloadFile(selectedFolderPath + '\\instances\\Vanilla', 'https://tempus.rest/files/Vanilla/versions.json', 'versions.json', 'Версии');
     //   await downloadFile(selectedFolderPath + '\\instances\\Vanilla\\resourcepacks', 'https://tempus.rest/files/Vanilla/resourcepacks/Faithful_64x.zip', 'Faithful_64x.zip', 'Faithful');
     //   await downloadFile(selectedFolderPath + '\\instances\\Vanilla\\resourcepacks', 'https://tempus.rest/files/Vanilla/resourcepacks/Tempus_pack_.zip', 'Tempus_pack_.zip', 'Tempus_pack');

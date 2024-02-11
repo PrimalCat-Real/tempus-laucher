@@ -22,7 +22,11 @@ import { useEffect, useState } from "react"
 import { invoke } from "@tauri-apps/api/tauri"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { renameFile } from "@tauri-apps/api/fs"
-
+import { Mod, folderPathState, modsConfigState } from "@/lib/data"
+import { useRecoilState } from "recoil"
+import { Avatar } from "@nextui-org/avatar"
+import { cn } from "@/lib/utils"
+import { fileURLToPath } from "url"
  
 // const data: Mod[] = [
 //   {
@@ -35,75 +39,102 @@ import { renameFile } from "@tauri-apps/api/fs"
 //   }
 // ]
  
-export type Mod = {
-  name: string
-  active: boolean
-}
  
 
-async function SwitchMod(fillepath: string, name:String, active: boolean){
-  if (fillepath.includes('disabled')) {
-    // Remove the ".disabled" string from the filepath if it exists
-    const modifiedFilePath = fillepath.replace(".disabled", "");
-    await renameFile(fillepath, modifiedFilePath);
-    console.log(modifiedFilePath);
-    return `${fillepath}.disabled`
-  } else {
-    // Add the ".disabled" string to the filepath
-    const modifiedFilePath = `${fillepath}.disabled`;
-    await renameFile(fillepath, modifiedFilePath);
-    return `${fillepath}.disabled`
-    console.log(modifiedFilePath);
+async function SwitchMod(filepath: string, active: boolean){
+  if(active){
+    const modifiedFilePath = filepath.replace(".disabled", "");
+    await renameFile(filepath, modifiedFilePath);
+    return modifiedFilePath
+  }else if(!filepath.includes('disabled')){
+    const modifiedFilePath = `${filepath}.disabled`;
+    await renameFile(filepath, modifiedFilePath);
+    return modifiedFilePath
   }
+  return filepath
+  // if (fillepath.includes('disabled')) {
+  //   // Remove the ".disabled" string from the filepath if it exists
+  //   const modifiedFilePath = fillepath.replace(".disabled", "");
+  //   await renameFile(fillepath, modifiedFilePath);
+  //   console.log(modifiedFilePath);
+  //   return `${fillepath}.disabled`
+  // } else {
+  //   // Add the ".disabled" string to the filepath
+  //   const modifiedFilePath = `${fillepath}.disabled`;
+  //   await renameFile(fillepath, modifiedFilePath);
+  //   return `${fillepath}.disabled`
+  //   console.log(modifiedFilePath);
+  // }
  
-  console.log(active);
+  // console.log(active);
 }
  
 export function ModsTable() {
+
+  const [modsConfig, setModsConfig] = useRecoilState(modsConfigState);
+
+  const [rawData, setRawData] = useState<Mod[]>([]);
+
+  
   const columns: ColumnDef<Mod>[] = [
+    {
+      accessorKey: "image",
+      header: ({ table }) => (
+        <div></div>
+      ),
+      cell: ({ row }) => (
+        <Avatar className="" name={row.getValue("name")} size="sm" src={row.getValue("image")}>
+          
+        </Avatar>
+      ),
+    },
     {
       accessorKey: "name",
       header: "Name",
       cell: ({ row }) => (
-        <div className="capitalize text-primary">{row.getValue("name")}</div>
+        <div className="capitalize text-primary flex flex-col">
+          {row.getValue("name")}
+          {/* {row.original.filePathName} */}
+        </div>
       ),
     },
-    {
-      id: "action",
-      header: ({ table }) => (
-        <div></div>
-        // <Checkbox
-        //   checked={
-        //     table.getIsAllPageRowsSelected() ||
-        //     (table.getIsSomePageRowsSelected() && "indeterminate")
-        //   }
-        //   onCheckedChange={(value: any) => table.toggleAllPageRowsSelected(!!value)}
-        //   aria-label="Select all"
-        // />
-      ),
-      cell: ({ row }) => (
-        <div></div>
-        // <Checkbox
-        //   checked={row.getIsSelected()}
-        //   onCheckedChange={(value: any) => row.toggleSelected(!!value)}
-        //   aria-label="Select row"
-        // />
-      ),
-      enableSorting: false,
-      enableHiding: false,
-    },
+    // {
+    //   id: "action",
+    //   header: ({ table }) => (
+    //     <div></div>
+    //   ),
+    //   cell: ({ row }) => (
+    //     <div></div>
+    //   ),
+    //   enableSorting: false,
+    //   enableHiding: false,
+    // },
     {
       accessorKey: "active",
       header: () => <div className="text-right px-2">Active</div>,
       cell: ({ row }) => (
         <div className="flex justify-end items-center">
           <Switch 
-            isSelected={row.original.active}
-           onValueChange={(value: any) => {
-            //  row.setValue("active", !value);
-            
-            const oppositeValue = !row.getValue("active");
-            row.original.active = oppositeValue
+            isSelected={row.getValue("active")}
+            // @TODO make all disabled check using this
+            isDisabled={!modsConfig.find(mod => mod.name === row.getValue("name"))?.installed}
+           onValueChange={async (value: any) => {
+
+            let updatedMods = await Promise.all(modsConfig.map(async mod => {
+                if (mod.name === row.getValue("name")) {
+                    return {
+                        ...mod,
+                        active: !mod.active,
+                        filePathName: await SwitchMod(mod.filePathName, !mod.active)
+                    };
+                }
+                return mod;
+            }));
+      
+          console.log("updatedMods", updatedMods);
+          setModsConfig(updatedMods);
+            // const oppositeValue = !row.getValue("active");
+            // row.original.active = oppositeValue
             // row.original.name = SwitchMod(`${storedPath}\\instances\\Vanilla\\mods\\${row.getValue("name")}`, value)
             // Update the data source directly
             // const updatedData = data.map(mod => {
@@ -116,6 +147,21 @@ export function ModsTable() {
             // Update the state with the modified data
             // setData(updatedData);
           }} size="sm" defaultSelected/>
+          {/* <Switch 
+              isSelected={row.getValue("active")}
+              onValueChange={async (value: any) => {
+                const modName = row.getValue("name");
+                const modIndex = modsConfig.findIndex(mod => mod.name === modName);
+                if (modIndex !== -1) {
+                  const updatedMods = [...modsConfig];
+                  updatedMods[modIndex].active = !value;
+                  setModsConfig(updatedMods);
+                  await SwitchMod(`${storedPath}\\instances\\Vanilla\\mods\\${modName}`, modName, value);
+                }
+              }}
+              size="sm"
+              defaultSelected
+            /> */}
         </div>
         // <div className="capitalize">{row.getValue("active")}</div>
         
@@ -134,6 +180,8 @@ export function ModsTable() {
     // },
   ]
   const [storedPath, setStoredPath] = useState("")
+  const [folderPath, setFolderPath] = useRecoilState(folderPathState)
+
 
   useEffect(() => {
     const tempPath = localStorage.getItem('gameFolderPath');
@@ -143,32 +191,14 @@ export function ModsTable() {
   })
   const [data, setData] = useState<Mod[]>([]); 
   
-  useEffect(() => {
-    const fetchFileNames = async () => {
-      const storedPath = localStorage.getItem('gameFolderPath');
-      try {
-        const response: string[] = await invoke('read_files_from_folder', { folderPath: storedPath + '/instances/Vanilla/mods' });
-        // setFileNames(response);
-        console.log(response);
-        // response.map(mod => ({
-        //     name:mod,
-        //     active: !response.includes(".disabled"),
-        // }));
-        
-        // const tempData: Mod[] = response.map(mod => ({
-        //   name:mod,
-        //   active: !mod.includes(".disabled")
-        // }));
-        // setData(tempData)
-       
-        
-      } catch (error) {
-        console.error('Error fetching file names:', error);
-      }
-    };
+  
 
-    fetchFileNames();
-  }, []);
+
+  useEffect(() => {
+
+    // setData(modsConfig)
+  }, [modsConfig])
+
 
   // table
 
@@ -181,7 +211,7 @@ export function ModsTable() {
   const [rowSelection, setRowSelection] = React.useState({})
  
   const table = useReactTable({
-    data,
+    data: modsConfig,
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -237,6 +267,7 @@ export function ModsTable() {
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
+                  className={cn("row.getValue('active')")}
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>

@@ -18,8 +18,9 @@ import { toast } from 'sonner';
 import { config } from 'process';
 import { useRecoilState } from 'recoil';
 import { usernameState } from '@/lib/user';
-import { folderPathState } from '@/lib/data';
+import { actionStatusState, folderPathState, javaMemoryState } from '@/lib/data';
 import { handleDownloadProcess } from '@/lib/game/download';
+import { startGame } from '@/lib/game/start';
 
 
 interface CardActionProps {
@@ -27,7 +28,7 @@ interface CardActionProps {
 }
 
 type Status = 'download' | 'update' | 'play';
-type indicatorStatus = 'unzipping' | 'playing' | 'downloading' | 'error' | false
+type downloadStatus = 'unzipping' | 'playing' | 'downloading' | 'error' | false
 
 
 const CardAction: React.FC<CardActionProps> = () => {
@@ -35,16 +36,17 @@ const CardAction: React.FC<CardActionProps> = () => {
   // const [userName, setUserName] = useState('');
 
   const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
-  const [actionStatus, setActionStatus] = useState<Status>('download');
+  const [actionStatus, setActionStatus] = useRecoilState(actionStatusState);
+  const [javaMemory, javaMemoryStatus] = useRecoilState(javaMemoryState);
 
-  const [downloadStatus, setDownloadStatus] = useState<indicatorStatus>(false)
+  const [downloadStatus, setDownloadStatus] = useState<downloadStatus>(false)
 
 
   
   const [downloadProgress, setDownloadProgress] = useState(0);
   const [downloadName, setDownloadName] = useState("");
 
-  // const [userName, setUserName] = useRecoilState(usernameState)
+  const [userName, setUserName] = useRecoilState(usernameState)
   const [folderPath, setFolderPath] = useRecoilState(folderPathState)
   // const [selectedFolderPath, setSelectedFolderPath] = useState<string | string[]>();
 
@@ -134,36 +136,36 @@ const CardAction: React.FC<CardActionProps> = () => {
   //   checkFolderExist().then(fetchData);
   // }, [selectedFolderPath]);
   
-  // useEffect(() => {
+  useEffect(() => {
     
-  //   listen('downloadStart', (event) => {
-  //     setDownloadStatus("downloading")
-  //     setDownloadName(event.payload as string)
-  //     // console.log("Testing", parseFloat(event.payload as string));
-  //   });
-  //   listen('downloadProgress', (event) => {
-  //     setDownloadProgress(parseFloat(event.payload as string));
-  //     // console.log("Testing", parseFloat(event.payload as string));
-  //   });
+    listen('downloadStart', (event) => {
+      setDownloadStatus("downloading")
+      setDownloadName(event.payload as string)
+      // console.log("Testing", parseFloat(event.payload as string));
+    });
+    listen('downloadProgress', (event) => {
+      setDownloadProgress(parseFloat(event.payload as string));
+      // console.log("Testing", parseFloat(event.payload as string));
+    });
 
-  //   listen('unzipStart', (event) => {
-  //     setDownloadStatus("unziping")
-  //     setDownloadName(event.payload as string);
-  //   });
+    listen('unzipStart', (event) => {
+      setDownloadStatus("unzipping")
+      setDownloadName(event.payload as string);
+    });
 
-  //   listen('startGame', (event) => {
-  //     setDownloadStatus("playing")
-  //   });
-  //   listen('endGame', (event) => {
-  //     setDownloadStatus(false)
-  //   });
+    listen('startGame', (event) => {
+      setDownloadStatus("playing")
+    });
+    listen('endGame', (event) => {
+      setDownloadStatus(false)
+    });
 
-  //   // listen('unzipProgress', (event) => {
-  //   //   setDownloadProgress(parseFloat(event.payload as string));
-  //   //   console.log("Unzip progress:", event.payload);
-  //   // });
+    // listen('unzipProgress', (event) => {
+    //   setDownloadProgress(parseFloat(event.payload as string));
+    //   console.log("Unzip progress:", event.payload);
+    // });
     
-  // }, []);
+  }, []);
 
   // // check updates modpack
   // // useEffect(() => {
@@ -251,8 +253,11 @@ const CardAction: React.FC<CardActionProps> = () => {
     if(actionStatus === "download"){
       // console.log(selectedFolderPath);
       // open download dialog
+      // onClose()
+      
       onOpen()
     }else if(actionStatus === "play"){
+      await startGame(folderPath, userName, javaMemory)
       // await handlePlay()
     }else if(actionStatus === "update"){
       // await updateGame()
@@ -381,7 +386,8 @@ const CardAction: React.FC<CardActionProps> = () => {
                                       <Button 
                                        onClick={async () => {
                                         await handleDownloadProcess(folderPath)
-                                        open()
+                                        onClose()
+                                        setActionStatus("play")
                                       }}
                                        color="primary" className='text-background'>
                                         Скачать

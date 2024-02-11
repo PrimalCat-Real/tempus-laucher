@@ -21,12 +21,6 @@ const Page = () => {
     router.push('/servers');
   };
 
-  const handleKeyDown = (e: any) => {
-    // If Enter key is pressed, call handleLogin
-    if (e.key === 'Enter') {
-      handleLogin();
-    }
-  };
 
   return (
     <div className='flex flex-col w-full gap-4'>
@@ -36,7 +30,11 @@ const Page = () => {
         label="Имя пользователя"
         value={userName}
         onChange={(e) => setUserName(e.target.value)}
-        onKeyDown={handleKeyDown}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') {
+            handleLogin();
+          }
+      }}
       />
       <Button onClick={handleLogin} color="primary" className='h-[50px] w-full text-background'>
         Войти

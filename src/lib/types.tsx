@@ -30,3 +30,5 @@ export interface ServerStatusResponse {
   };
   // Add more properties as needed
 }
+
+export type downloadStatus = 'unzipping' | 'playing' | 'downloading' | 'error' | false
