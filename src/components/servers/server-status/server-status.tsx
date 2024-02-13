@@ -16,7 +16,7 @@ const [status, setStatus] =  useRecoilState(vanillaStatusState)
 useEffect(() => {
   const fetchServerStatus = async () => {
     try {
-      const address = 'hesiovanila.world';
+      const address = 'play.tempus-vanilla.fun';
       const query = true; // Enable query lookup
       const timeout = 5.0; // Timeout in seconds
 
@@ -52,7 +52,8 @@ useEffect(() => {
               <span className={cn("relative inline-flex rounded-full h-2 w-2 bg-green-500", status && status.online  ? 'bg-green-400' : 'bg-red-500')}></span>
           </span>
           
-          {status.players.online} / {status.players.max}
+          {status.players.online} / 100
+          {/* / {status.players.max} */}
           
           
       </div>

@@ -49,6 +49,7 @@ export interface Mod {
     image: string;
     filePathName: string,
     description: string;
+    downloadUrl: string;
 }
 
 interface ModsConfig {
@@ -74,6 +75,7 @@ export const modsConfigState = atom<Mod[]>({
             filePathName: "",
             version: "mc1.20.4-0.5.8",
             image: "https://cdn.modrinth.com/data/AANobbMI/icon.png",
+            downloadUrl: "",
             description: ""
         },
         {
@@ -82,6 +84,7 @@ export const modsConfigState = atom<Mod[]>({
             installed: false,
             filePathName: "",
             version: "fabric-1.20.4-1.3.1",
+            downloadUrl: "",
             image: "",
             description: ""
         },
@@ -92,6 +95,7 @@ export const modsConfigState = atom<Mod[]>({
             filePathName: "",
             version: "2.3.4+1.20.4",
             image: "https://cdn.modrinth.com/data/yBW8D80W/icon.png",
+            downloadUrl: "",
             description: ""
         },
         {
@@ -101,6 +105,7 @@ export const modsConfigState = atom<Mod[]>({
             filePathName: "",
             version: "mc1.20.4-0.5.4",
             image: "https://cdn.modrinth.com/data/PtjYWJkn/icon.png",
+            downloadUrl: "",
             description: ""
         },
     ],
