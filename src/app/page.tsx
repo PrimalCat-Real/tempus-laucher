@@ -47,7 +47,7 @@ export default function Home() {
         toastShown.current = true;
       }else{
         if (!toastShown.current) {
-          toast.info('Нету обновлений')
+          toast.info('Нету обновлений1')
         }
         toastShown.current = true;
       }
