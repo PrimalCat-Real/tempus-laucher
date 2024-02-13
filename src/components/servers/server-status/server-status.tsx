@@ -52,7 +52,7 @@ useEffect(() => {
               <span className={cn("relative inline-flex rounded-full h-2 w-2 bg-green-500", status && status.online  ? 'bg-green-400' : 'bg-red-500')}></span>
           </span>
           
-          {status.players.online} / 100
+          {status.players ? (status.players.online !== undefined ? status.players.online : 0) : 0} / 100
           {/* / {status.players.max} */}
           
           

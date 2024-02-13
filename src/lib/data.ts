@@ -108,6 +108,56 @@ export const modsConfigState = atom<Mod[]>({
             downloadUrl: "",
             description: ""
         },
+        {
+            name: "plasmo-voice",
+            active: false,
+            installed: false,
+            filePathName: "",
+            version: "fabric-1.20.3-2.0.8",
+            image: "https://cdn.modrinth.com/data/1bZhdhsH/icon.png",
+            downloadUrl: "https://cdn.modrinth.com/data/1bZhdhsH/versions/fykZJcya/plasmovoice-fabric-1.20.3-2.0.8.jar",
+            description: ""
+        },
+        {
+            name: "iris",
+            active: false,
+            installed: false,
+            filePathName: "iris-mc1.20.4-1.6.17.jar",
+            version: "1.6.17+1.20.1",
+            image: "https://cdn.modrinth.com/data/YL57xq9U/dc558eece920db435f9823ce86de0c4cde89800b.png",
+            downloadUrl: "https://cdn.modrinth.com/data/YL57xq9U/versions/JHbrO6Zq/iris-mc1.20.1-1.6.17.jar",
+            description: ""
+        },
+        {
+            name: "Inter dimensional map",
+            active: false,
+            installed: false,
+            filePathName: "interdimensional-map-markers-1.0.2.jar",
+            version: "1.6.17+1.20.1",
+            image: "https://cdn.modrinth.com/data/oiCuHwqj/6ee30320030e394bd8b7c0d2efe86bd2219323e8.png",
+            downloadUrl: "https://cdn.modrinth.com/data/oiCuHwqj/versions/48LiUaxB/interdimensional-map-markers-1.0.2.jar",
+            description: ""
+        },
+        {
+            name: "LinsAPI",
+            active: false,
+            installed: false,
+            filePathName: "LinsAPI-1.4.6.jar",
+            version: "1.6.17+1.20.1",
+            image: "",
+            downloadUrl: "https://cdn.modrinth.com/data/oiCuHwqj/versions/48LiUaxB/interdimensional-map-markers-1.0.2.jar",
+            description: ""
+        },
+        {
+            name: "memoryleakfix",
+            active: false,
+            installed: false,
+            filePathName: "memoryleakfix-fabric-1.17+-1.1.5.jar",
+            version: "1.6.17+1.20.1",
+            image: "https://cdn.modrinth.com/data/NRjRiSSD/icon.png",
+            downloadUrl: "https://cdn.modrinth.com/data/NRjRiSSD/versions/3w0IxNtk/memoryleakfix-forge-1.17%2B-1.1.5.jar",
+            description: ""
+        },
     ],
-    effects_UNSTABLE: [persistAtom],
+    // effects_UNSTABLE: [persistAtom],
 })

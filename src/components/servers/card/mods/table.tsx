@@ -27,6 +27,7 @@ import { useRecoilState } from "recoil"
 import { Avatar } from "@nextui-org/avatar"
 import { cn } from "@/lib/utils"
 import { fileURLToPath } from "url"
+import { ArrowUpDown } from "lucide-react"
  
 // const data: Mod[] = [
 //   {
@@ -90,7 +91,10 @@ export function ModsTable() {
     },
     {
       accessorKey: "name",
-      header: "Name",
+      header: ({column}) => <div className="text-right cursor-pointer flex items-center gap-2 justify-start px-1"  onClick={() => 
+        {column.toggleSorting(
+        column.getIsSorted() === "asc")
+        }}>Название<ArrowUpDown size={16} /></div>,
       cell: ({ row }) => (
         <div className="capitalize text-primary flex flex-col">
           {row.getValue("name")}
@@ -111,7 +115,10 @@ export function ModsTable() {
     // },
     {
       accessorKey: "active",
-      header: () => <div className="text-right px-2">Active</div>,
+      header: ({column}) => <div className="text-right px-1 cursor-pointer flex items-center gap-2 justify-end"  onClick={() => 
+        {column.toggleSorting(
+        column.getIsSorted() === "asc")
+        }}>Active<ArrowUpDown size={16} /></div>,
       cell: ({ row }) => (
         <div className="flex justify-end items-center">
           <Switch 
@@ -183,14 +190,6 @@ export function ModsTable() {
   const [folderPath, setFolderPath] = useRecoilState(folderPathState)
 
 
-  useEffect(() => {
-    const tempPath = localStorage.getItem('gameFolderPath');
-    if(tempPath){
-      setStoredPath(tempPath)
-    }
-  })
-  const [data, setData] = useState<Mod[]>([]); 
-  
   
 
 
@@ -232,7 +231,7 @@ export function ModsTable() {
     <div className="w-full">
       <div className="flex items-center py-4">
         <Input
-          placeholder="Filter mods..."
+          placeholder="Фильтровать моды..."
           value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
             table.getColumn("name")?.setFilterValue(event.target.value)
