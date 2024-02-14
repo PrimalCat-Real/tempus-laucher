@@ -158,6 +158,47 @@ export const modsConfigState = atom<Mod[]>({
             downloadUrl: "https://cdn.modrinth.com/data/NRjRiSSD/versions/3w0IxNtk/memoryleakfix-forge-1.17%2B-1.1.5.jar",
             description: ""
         },
+        {
+            name: "language-reload",
+            active: false,
+            installed: false,
+            filePathName: "language-reload-1.5.10+1.20.3.jar",
+            version: "1.6.17+1.20.1",
+            image: "https://cdn.modrinth.com/data/uLbm7CG6/9cae8ec18cac3b1cc6ef1efa239f381d669264e6.png",
+            downloadUrl: "https://cdn.modrinth.com/data/uLbm7CG6/versions/SSvudGpI/language-reload-1.5.10%2B1.20.3.jar",
+            description: ""
+        },
+        {
+            name: "language-reload",
+            active: false,
+            installed: false,
+            filePathName: "language-reload-1.5.10+1.20.3.jar",
+            version: "1.6.17+1.20.1",
+            image: "https://cdn.modrinth.com/data/uLbm7CG6/9cae8ec18cac3b1cc6ef1efa239f381d669264e6.png",
+            downloadUrl: "https://cdn.modrinth.com/data/uLbm7CG6/versions/SSvudGpI/language-reload-1.5.10%2B1.20.3.jar",
+            description: ""
+        },
+        {
+            name: "modernfix",
+            active: false,
+            installed: false,
+            filePathName: "modernfix-fabric-5.13.0+mc1.20.4.jar",
+            version: "1.6.17+1.20.1",
+            image: "https://cdn.modrinth.com/data/nmDcB62a/e1d2433476995be1b1a94ff1afaf6167752274ae.png",
+            downloadUrl: "https://cdn.modrinth.com/data/nmDcB62a/versions/T8GvLNSz/modernfix-neoforge-5.13.0%2Bmc1.20.4.jar",
+            description: ""
+        },
+        {
+            name: "morechathistory",
+            active: false,
+            installed: false,
+            filePathName: "morechathistory-1.3.0.jar",
+            version: "1.6.17+1.20.1",
+            image: "https://cdn.modrinth.com/data/8qkXwOnk/icon.png",
+            downloadUrl: "https://cdn.modrinth.com/data/8qkXwOnk/versions/PLfxrDkh/morechathistory-1.3.0.jar",
+            description: ""
+        },
+
     ],
     // effects_UNSTABLE: [persistAtom],
 })

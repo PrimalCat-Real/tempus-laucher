@@ -46,22 +46,3 @@ export function findDifferentKeys(obj1: any, obj2: any, parentKey = ''): string[
 
 
 // launcher
-export async function checkAndUpdateLauncher() {
-    try {
-      const { shouldUpdate, manifest } = await checkUpdate();
-    //   console.log("shouldUpdate:", shouldUpdate);
-    //   console.log("manifest:", manifest);
-      if(shouldUpdate){
-        toast('Доступно обновление лаунчера', {
-            action: {
-                label: 'Обновить',
-                onClick: () => {
-                installUpdate().then(relaunch);
-                }
-            },
-        })
-      }
-    } catch (error) {
-      console.error("Error fetching updates:", error);
-    }
-  }

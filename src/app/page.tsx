@@ -6,7 +6,6 @@ import { checkUpdate, installUpdate, onUpdaterEvent } from '@tauri-apps/api/upda
 import { toast } from 'sonner';
 import { relaunch } from '@tauri-apps/api/process';
 import { redirectServersPage } from '@/auth/redirect';
-import { checkAndUpdateLauncher } from '@/lib/update';
 import writeConfig, { config, readConfig, updateConfigValue } from '@/config/launcher';
 import { readTextFile } from '@tauri-apps/api/fs';
 import { atom, useRecoilState } from 'recoil';
@@ -37,8 +36,8 @@ export default function Home() {
           const { version: newVersion, body: releaseNotes } = manifest;
           toast('Доступно обновление ' + newVersion, {
             action: {
-              label: 'Undo',
-              onClick: () => {console.log('Undo')
+              label: 'Обновить',
+              onClick: () => {
               startInstall(newVersion)
               } 
             },
@@ -47,7 +46,7 @@ export default function Home() {
         toastShown.current = true;
       }else{
         if (!toastShown.current) {
-          toast.info('Нету обновлений1')
+          toast.info('Нету обновлений')
         }
         toastShown.current = true;
       }
@@ -121,7 +120,6 @@ export default function Home() {
 
   useEffect(() => {
     
-    checkAndUpdateLauncher();
     // redirectServersPage();
 
   //   const userName = localStorage.getItem('userName');
