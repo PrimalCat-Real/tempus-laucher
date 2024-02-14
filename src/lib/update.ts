@@ -2,19 +2,20 @@ import { relaunch } from "@tauri-apps/api/process";
 import { checkUpdate, installUpdate } from "@tauri-apps/api/updater";
 import { toast } from "sonner";
 
-export interface ResourcePack {
+export interface Version {
     vanilla: {
         resourcepack_tempus: string;
+        mods: string;
     };
 }
-export async function getResourcePack(url: string): Promise<ResourcePack | null> {
+export async function getServerVersion(url: string): Promise<Version | null> {
     try {
         const response = await fetch(url);
         if (!response.ok) {
             throw new Error(`Failed to fetch resource pack: ${response.statusText}`);
         }
-        const resourcePack: ResourcePack = await response.json();
-        return resourcePack;
+        const version: Version = await response.json();
+        return version;
     } catch (error) {
         console.error("Error fetching resource pack:", error);
         return null;

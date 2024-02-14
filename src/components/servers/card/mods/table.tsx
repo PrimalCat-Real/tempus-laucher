@@ -91,14 +91,14 @@ export function ModsTable() {
     },
     {
       accessorKey: "name",
-      header: ({column}) => <div className="text-right cursor-pointer flex items-center gap-2 justify-start px-1"  onClick={() => 
+      header: ({column}) => <div className="text-right cursor-pointer flex items-center gap-2 justify-start px-0"  onClick={() => 
         {column.toggleSorting(
         column.getIsSorted() === "asc")
         }}>Название<ArrowUpDown size={16} /></div>,
       cell: ({ row }) => (
-        <div className="capitalize text-primary flex flex-col">
+        <div className="capitalize text-primary flex flex-col p-0">
           {row.getValue("name")}
-          {/* {row.original.filePathName} */}
+          {/* {row.original.filePathName.split('\\').slice(-1)[0]} */}
         </div>
       ),
     },
@@ -236,7 +236,7 @@ export function ModsTable() {
           onChange={(event) =>
             table.getColumn("name")?.setFilterValue(event.target.value)
           }
-          className="max-w-sm text-secondary"
+          className="max-w-sm text-secondary focus-visible:ring-transparent ring-transparent"
         />
 
       </div>

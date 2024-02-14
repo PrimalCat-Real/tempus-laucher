@@ -53,9 +53,7 @@ useEffect(() => {
           </span>
           
           {status.players ? (status.players.online !== undefined ? status.players.online : 0) : 0} / 100
-          {/* / {status.players.max} */}
-          
-          
+          {/* / {status.players.max} */}  
       </div>
     </Skeleton>
   )

@@ -13,13 +13,13 @@ import { Command } from '@tauri-apps/api/shell'
 import { listen, Event  } from '@tauri-apps/api/event';
 import Play from '@/components/icons/play';
 import { checkFileExisting, downloadAndUnzip, downloadFile } from '@/lib/utils';
-import { ResourcePack, findDifferentKeys, getResourcePack } from '@/lib/update';
+import { findDifferentKeys } from '@/lib/update';
 import { toast } from 'sonner';
 import { config } from 'process';
 import { useRecoilState } from 'recoil';
 import { usernameState } from '@/lib/user';
-import { actionStatusState, folderPathState, javaMemoryState } from '@/lib/data';
-import { handleDownloadProcess } from '@/lib/game/download';
+import { Mod, actionStatusState, folderPathState, javaMemoryState, modsConfigState } from '@/lib/data';
+import { handleDownloadProcess, handleUpdateProcess } from '@/lib/game/download';
 import { startGame } from '@/lib/game/start';
 
 
@@ -38,6 +38,7 @@ const CardAction: React.FC<CardActionProps> = () => {
   const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
   const [actionStatus, setActionStatus] = useRecoilState(actionStatusState);
   const [javaMemory, javaMemoryStatus] = useRecoilState(javaMemoryState);
+  const [modsConfig, setModsConfig] = useRecoilState(modsConfigState);
 
   const [downloadStatus, setDownloadStatus] = useState<downloadStatus>(false)
 
@@ -82,44 +83,91 @@ const CardAction: React.FC<CardActionProps> = () => {
     getLauncherPath();
   }, [folderPath]);
 
+
+  // get mods
+  useEffect(() => {
+    const fetchFileNames = async () => {
+      try {
+        const response: string[] = await invoke('read_files_from_folder', { folderPath: folderPath + '/instances/Vanilla/mods' });
+        // // setFileNames(response);
+        console.log(response);
+        console.log(modsConfig);
+        const updatedModsConfig: Mod[] = modsConfig.map(mod => {
+          const foundFile = response.find(file => {
+              const versionParts = mod.version.split('-');
+              let allPartsIncluded = true;
+
+              for (const part of versionParts) {
+                // console.log(file, part);
+                
+                  if (!file.includes(part)) {
+                      allPartsIncluded = false;
+                      break;
+                  }
+              }
+              // console.log(file, file.includes(mod.name), allPartsIncluded)
+              return (file.includes(mod.name) && allPartsIncluded) || file.includes(mod.filePathName);
+          });
+        
+          // const active = !response.some(file => file.endsWith(mod.name + '.disabled')); // Проверяем, заканчивается ли файл на ".disabled"
+          const disabledMod = response.some(file => file.startsWith(mod.name) && file.endsWith('.disabled'));
+          return {
+            ...mod,
+            filePathName: `${folderPath}\\instances\\Vanilla\\mods\\${foundFile}` || "",
+            active: (foundFile && foundFile.endsWith('.disabled')) ?  false : true,
+            installed: foundFile ? true : false
+          };
+        });
+        setModsConfig(updatedModsConfig)
+        
+        
+        
+      } catch (error) {
+        console.error('Error fetching file names:', error);
+      }
+    };
+
+    fetchFileNames();
+  }, []);
+
   // useEffect(() => {
 
   //   // check updates
-  //   const fetchData = async () => {
+    // const fetchData = async () => {
 
-  //     try {
-  //       let localObj: ResourcePack | null = null;
-  //       // alert(`${selectedFolderPath}\\instances\\Vanilla\\versions.json`)
+    //   try {
+    //     let localObj: ResourcePack | null = null;
+    //     // alert(`${selectedFolderPath}\\instances\\Vanilla\\versions.json`)
 
-  //       const localObjString: string | null = await invoke('read_json_file', { path: `${selectedFolderPath}\\instances\\Vanilla\\versions.json` });
+    //     const localObjString: string | null = await invoke('read_json_file', { path: `${selectedFolderPath}\\instances\\Vanilla\\versions.json` });
 
-  //       if (localObjString !== null) {
-  //           localObj = JSON.parse(localObjString);
-  //       }
+    //     if (localObjString !== null) {
+    //         localObj = JSON.parse(localObjString);
+    //     }
 
-  //       console.log('Local Object:', localObj);
+    //     console.log('Local Object:', localObj);
 
-  //       const resourcePackUrl = `https://tempus.rest:8000/versions/vanilla/versions.json`;
-  //       const remoteObj = await getResourcePack(resourcePackUrl);
-  //       const isEqualPacks = JSON.stringify(localObj?.vanilla.resourcepack_tempus) === JSON.stringify(remoteObj?.vanilla.resourcepack_tempus);
+    //     const resourcePackUrl = `https://tempus.rest:8000/versions/vanilla/versions.json`;
+    //     const remoteObj = await getResourcePack(resourcePackUrl);
+    //     const isEqualPacks = JSON.stringify(localObj?.vanilla.resourcepack_tempus) === JSON.stringify(remoteObj?.vanilla.resourcepack_tempus);
 
-  //       const diffLog = findDifferentKeys(remoteObj, localObj)
+    //     const diffLog = findDifferentKeys(remoteObj, localObj)
         
         
-  //       console.log('Remote Object:', remoteObj);
-  //       console.log('diffLog', diffLog);
+    //     console.log('Remote Object:', remoteObj);
+    //     console.log('diffLog', diffLog);
 
-  //       if (!isEqualPacks) {
-  //         setStatus("update");
-  //         const diffLog = findDifferentKeys(remoteObj, localObj)
-  //         console.log(diffLog);
+    //     if (!isEqualPacks) {
+    //       setStatus("update");
+    //       const diffLog = findDifferentKeys(remoteObj, localObj)
+    //       console.log(diffLog);
           
-  //       }
+    //     }
         
-  //     } catch (err) {
-  //       console.error('Error comparing versions:', err);
-  //     }
-  //   };
+    //   } catch (err) {
+    //     console.error('Error comparing versions:', err);
+    //   }
+    // };
   
   //   const checkFolderExist = async () => {
   //     const isGameExist = await checkFileExisting(selectedFolderPath + '\\instances\\Vanilla');
@@ -158,6 +206,11 @@ const CardAction: React.FC<CardActionProps> = () => {
     });
     listen('endGame', (event) => {
       setDownloadStatus(false)
+    });
+
+    listen('errorGame', (event) => {
+      // setDownloadStatus(false)
+      toast.error('Ошибка код: ' + (event.payload as string))
     });
 
     // listen('unzipProgress', (event) => {
@@ -261,6 +314,7 @@ const CardAction: React.FC<CardActionProps> = () => {
       // await handlePlay()
     }else if(actionStatus === "update"){
       // await updateGame()
+      onOpen()
     }
     
   }
@@ -383,7 +437,7 @@ const CardAction: React.FC<CardActionProps> = () => {
                                         <span className="overflow-hidden dir-rtl">{folderPath}</span>
                                       </Button>)}
                                       
-                                      <Button 
+                                      {actionStatus === "download" &&  (<Button 
                                        onClick={async () => {
                                         await handleDownloadProcess(folderPath)
                                         onClose()
@@ -391,7 +445,16 @@ const CardAction: React.FC<CardActionProps> = () => {
                                       }}
                                        color="primary" className='text-background'>
                                         Скачать
-                                      </Button>
+                                      </Button>)}
+                                      {actionStatus === "update" &&  (<Button 
+                                       onClick={async () => {
+                                        await handleUpdateProcess(folderPath)
+                                        onClose()
+                                        setActionStatus("play")
+                                      }}
+                                       color="primary" className='text-background'>
+                                        Скачать
+                                      </Button>)}
                                     </div>
                                   )};
                               </ModalBody>

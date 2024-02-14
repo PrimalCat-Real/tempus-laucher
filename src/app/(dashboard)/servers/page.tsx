@@ -14,6 +14,7 @@ import { toast } from 'sonner'
 
 const ServersPage = () => {
     
+    
     console.log('My first toast');
     const serversData: ServerData[] = [
         {

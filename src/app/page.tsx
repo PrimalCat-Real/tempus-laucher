@@ -15,13 +15,14 @@ import { usernameState } from '@/lib/user';
 import { Mod, actionStatusState, folderPathState, modsConfigState } from '@/lib/data';
 import { invoke } from '@tauri-apps/api/tauri';
 import { checkFileExisting } from '@/lib/utils';
+import { Version, findDifferentKeys, getServerVersion } from '@/lib/update';
 
 const { persistAtom } = recoilPersist()
 
 
 export default function Home() {
   const [userName, setUserName] = useRecoilState(usernameState)
-  const [modsConfig, setModsConfig] = useRecoilState(modsConfigState);
+  
   const [folderPath, setFolderPath] = useRecoilState(folderPathState)
   const [actionStatus, setActionStatus] = useRecoilState(actionStatusState);
 
@@ -56,54 +57,48 @@ export default function Home() {
   function startInstall(newVersion: string) {
     installUpdate().then(relaunch);
   }
-  // get mods
-  useEffect(() => {
-    const fetchFileNames = async () => {
-      try {
-        const response: string[] = await invoke('read_files_from_folder', { folderPath: folderPath + '/instances/Vanilla/mods' });
-        // // setFileNames(response);
-        console.log(response);
-        console.log(modsConfig);
-        const updatedModsConfig: Mod[] = modsConfig.map(mod => {
-          const foundFile = response.find(file => {
-              const versionParts = mod.version.split('-');
-              let allPartsIncluded = true;
+  
 
-              for (const part of versionParts) {
-                // console.log(file, part);
-                
-                  if (!file.includes(part)) {
-                      allPartsIncluded = false;
-                      break;
-                  }
-              }
-              // console.log(file, file.includes(mod.name), allPartsIncluded)
-              return (file.includes(mod.name) && allPartsIncluded) || file.includes(mod.filePathName);
-          });
-        
-          // const active = !response.some(file => file.endsWith(mod.name + '.disabled')); // Проверяем, заканчивается ли файл на ".disabled"
-          const disabledMod = response.some(file => file.startsWith(mod.name) && file.endsWith('.disabled'));
-          return {
-            ...mod,
-            filePathName: `${folderPath}\\instances\\Vanilla\\mods\\${foundFile}` || "",
-            active: (foundFile && foundFile.endsWith('.disabled')) ?  false : true,
-            installed: foundFile ? true : false
-          };
-        });
-        setModsConfig(updatedModsConfig)
-        
+
+  useEffect(() => {
+    const fetchData = async () => {
+
+      try {
+        let localObj: Version | null = null;
+        // alert(`${selectedFolderPath}\\instances\\Vanilla\\versions.json`)
+
+        const localObjString: string | null = await invoke('read_json_file', { path: `${folderPath}\\instances\\Vanilla\\versions.json` });
+
+        if (localObjString !== null) {
+            localObj = JSON.parse(localObjString);
+        }
+
+        // console.log('Local Object:', localObj);
+
+        const versionUrl = `https://tempus.rest:8000/versions/vanilla/versions.json`;
+        const remoteObj = await getServerVersion(versionUrl);
+        const isEqualPacks = JSON.stringify(localObj?.vanilla.resourcepack_tempus) === JSON.stringify(remoteObj?.vanilla.resourcepack_tempus);
+        const isEqualMods = JSON.stringify(localObj?.vanilla.mods) === JSON.stringify(remoteObj?.vanilla.mods);
+        // const diffLog = findDifferentKeys(remoteObj, localObj)
         
         
-      } catch (error) {
-        console.error('Error fetching file names:', error);
+        // console.log('Remote Object:', remoteObj);
+        // console.log('diffLog', diffLog);
+
+        console.log("isEqualMods", isEqualMods);
+        
+        if (!isEqualPacks || !isEqualMods) {
+          setActionStatus("update");
+          const diffLog = findDifferentKeys(remoteObj, localObj)
+          console.log(diffLog); 
+        }
+        
+      } catch (err) {
+        console.error('Error comparing versions:', err);
       }
     };
 
-    fetchFileNames();
-  }, []);
 
-
-  useEffect(() => {
     const checkFolderExist = async () => {
       const isGameExist = await checkFileExisting(folderPath + '\\instances\\Vanilla');
       const isDatastore = await checkFileExisting(folderPath + '\\datastore');
@@ -115,7 +110,7 @@ export default function Home() {
         setActionStatus("download");
       }
     };
-    checkFolderExist(); // Run the function when component mounts
+    checkFolderExist().then(fetchData); // Run the function when component mounts
   }, []); 
 
   useEffect(() => {
