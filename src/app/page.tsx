@@ -87,11 +87,11 @@ export default function Home() {
 
         console.log("isEqualMods", isEqualMods);
         
-        if (!isEqualPacks || !isEqualMods) {
-          setActionStatus("update");
-          const diffLog = findDifferentKeys(remoteObj, localObj)
-          console.log(diffLog); 
-        }
+        // if (!isEqualPacks || !isEqualMods) {
+        //   setActionStatus("update");
+        //   const diffLog = findDifferentKeys(remoteObj, localObj)
+        //   console.log(diffLog); 
+        // }
         
       } catch (err) {
         console.error('Error comparing versions:', err);
